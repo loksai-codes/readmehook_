@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { connection } from 'next/server';
+import { after, connection } from 'next/server';
 import { Suspense } from 'react';
 import { DevVariantToolbar } from '@/components/hero/DevVariantToolbar';
 import { HeroShell } from '@/components/hero/HeroShell';
@@ -68,13 +68,13 @@ async function RepoCard({ params, searchParams }: Pick<Props, 'params' | 'search
   const traits = buildHeroTraits(snapshot, parsed, visitor.referrerSource);
   const creator = isCreatorView(query.created);
 
-  // FR-6: identify + evaluate (records the exposure) only for real human page views, then flush
-  // before rendering: Amplify (Lambda) can freeze right after the response. Fails open to control.
+  // FR-6: identify + evaluate (records the exposure) only for real human page views. The exposure
+  // is flushed after the response via after() (Vercel waitUntil). Fails open to control.
   const plan = planVariant(query.variant, visitor, { creator });
   let variant: HeroLayout;
   if (plan.source === 'flagsmith') {
     variant = await evaluateHeroLayout(plan.visitorId, traits);
-    await flushFlagsmith();
+    after(flushFlagsmith);
   } else {
     variant = plan.variant;
   }

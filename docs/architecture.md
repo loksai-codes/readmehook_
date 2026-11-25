@@ -26,7 +26,7 @@ flowchart LR
 
 ## Telemetry flow
 
-Client `trackExperimentEvent` → `POST /api/track` (`sendBeacon` for unload/outbound) → validate → Flagsmith event (identity `rh_vid`) + Redis counters → Flagsmith flush awaited **before** the response (AWS Amplify/Lambda can freeze right after it; `after()` is unsupported there).
+Client `trackExperimentEvent` → `POST /api/track` (`sendBeacon` for unload/outbound) → validate → Flagsmith event (identity `rh_vid`) + Redis counters → Flagsmith flush scheduled with `after()`, which Vercel keeps alive via `waitUntil` once the response has been sent.
 
 ## Redis keys
 

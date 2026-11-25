@@ -9,7 +9,7 @@ Reference: https://docs.flagsmith.com/experimentation/set-up-with-a-coding-agent
 1. Sign up / log in to Flagsmith Cloud. Create project **ReadmeHook**.
 2. Keep two environments: **Development** (local + simulated traffic) and **Production** (real visitors only).
 3. Confirm Experimentation is enabled for the project/environment and that the environment has its analytics warehouse connected (the setup prompt checks this; experiments can't record results without it). If the hackathon gave you a promo/plan for Experimentation, apply it now.
-4. Copy each environment's **server-side key** (`ser.…`) into `FLAGSMITH_SERVER_KEY` (Development key in `.env.local`, Production key in the Amplify environment variables, see docs/deploy-amplify.md).
+4. Copy each environment's **server-side key** (`ser.…`) into `FLAGSMITH_SERVER_KEY` (Development key in `.env.local`, Production key in the Vercel project's Production environment variables, see docs/deploy-vercel.md).
 
 ## 1. Multivariate flag
 
@@ -67,7 +67,7 @@ Leave it **not started** until the code is deployed and verified. Then start it 
 
 ## 6. Current setup (created 2026-11-25 via the Flagsmith CLI, Cloud)
 
-No keys here: server keys live in `.env.local` (Development) and the Amplify production branch environment variables; the admin API key lives outside the repo.
+No keys here: server keys live in `.env.local` (Development) and the Vercel project's Production environment variables; the admin API key lives outside the repo.
 
 | | Development | Production |
 |---|---|---|
@@ -80,7 +80,7 @@ No keys here: server keys live in `.env.local` (Development) and the Amplify pro
 
 Allocation in both: rollout 100%, `quickstart_first` 50%, `demo_gif_first` 0%, control the remaining 50%. The bounce metric's expected direction is `not_increase` (guardrail).
 
-Start Production only after the Amplify deploy is verified (docs/deploy-amplify.md):
+Start Production only after the Vercel deploy is verified (docs/deploy-vercel.md):
 
 ```bash
 flagsmith api -X POST api/v1/environments/iKpcbAp4Uc2tHEaYZuwCre/experiments/485/start/
@@ -88,7 +88,7 @@ flagsmith api -X POST api/v1/environments/iKpcbAp4Uc2tHEaYZuwCre/experiments/485
 
 Dashboard: https://app.flagsmith.com/project/56121/environment/iKpcbAp4Uc2tHEaYZuwCre/experiments/485
 
-## 7. Vercel environment variables (project `loksai/readmehook`, fallback host; production runs on Amplify, see docs/deploy-amplify.md)
+## 7. Vercel environment variables (project `loksai/readmehook`, see docs/deploy-vercel.md)
 
 | Variable | Production | Preview + Development |
 |---|---|---|
@@ -97,6 +97,6 @@ Dashboard: https://app.flagsmith.com/project/56121/environment/iKpcbAp4Uc2tHEaYZ
 | `TELEMETRY_PREFIX` | unset (= no prefix) | `dev:` |
 | `GITHUB_TOKEN`, `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN` | shared | shared |
 | `ADMIN_TOKEN` | generated, same in all targets | same |
-| `NEXT_PUBLIC_SITE_URL` | set after the first deploy, to the production URL | optional |
+| `NEXT_PUBLIC_SITE_URL` | optional; only for a custom domain (defaults to the Vercel production domain) | optional |
 
 Local `.env.local` uses the Development key and `TELEMETRY_PREFIX=dev:`. Production and dev share one Upstash database; the prefix keeps dev counters out of Production's live counters.

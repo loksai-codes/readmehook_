@@ -26,7 +26,7 @@ describe('refusalReason (CLAUDE.md rule 12, NFR-6)', () => {
     expect(refusalReason({ ...ok, prefix: 'dev:' })).toMatch(/TELEMETRY_PREFIX/);
   });
   it('refuses a remote base unless explicitly allowed', () => {
-    expect(refusalReason({ ...ok, base: 'https://main.d123.amplifyapp.com' })).toMatch(/not localhost/);
+    expect(refusalReason({ ...ok, base: 'https://readmehook.vercel.app' })).toMatch(/not localhost/);
     expect(refusalReason({ ...ok, base: 'https://dev.example.com', allowRemote: true })).toBeNull();
   });
   it('refuses when the target server is not on sim: (e.g. a production server)', () => {

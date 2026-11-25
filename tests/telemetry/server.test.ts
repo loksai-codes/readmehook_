@@ -35,7 +35,7 @@ beforeEach(() => {
 });
 
 describe('recordEvent dual-write (FR-7.3)', () => {
-  it('sends the event to Flagsmith for the cookie identity and reports it so the route flushes', async () => {
+  it('sends the event to Flagsmith for the cookie identity and reports it for the after() flush', async () => {
     redis.sadd.mockResolvedValue(1);
     const result = await recordEvent(VID, body);
     expect(trackFlagsmithEvent).toHaveBeenCalledWith(VID, 'clone_command_copied');

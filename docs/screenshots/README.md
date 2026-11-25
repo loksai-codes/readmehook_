@@ -10,3 +10,4 @@ Referenced from the root README and `docs/results.md`. Capture from the Producti
 | `share-panel.png` | the card right after pasting a repo on `/` (share panel visible) |
 | `stats-audit.png` | `/r/owner/repo/stats` with at least one failing check |
 | `og-image.png` | a Discord unfurl of a card link |
+| `og-card.png` | **captured**: the `/api/og/vercel/next.js` render, used at the top of the root README |

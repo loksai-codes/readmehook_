@@ -4,4 +4,4 @@
 - `traits.ts` — `buildHeroTraits()` and `planVariant()` (dev override / Flagsmith / control for bots, prefetch, no id).
 - `evaluate.ts` — `evaluateHeroLayout(visitorId, traits)` via `getExperimentFlag()` (records the exposure); fails open to CONTROL.
 - `track.ts` — `trackFlagsmithEvent(visitorId, event)` via `trackEvent(event, { identifier })`.
-- `flush.ts` — `flushFlagsmith()`: `flushEvents()` capped at 1.5 s, awaited before every response that tracked something (Amplify/Lambda; `after()` is unsupported there).
+- `flush.ts` — `flushFlagsmith()`: `flushEvents()` capped at 5 s; scheduled with `after(flushFlagsmith)` (Vercel `waitUntil`) by every request that tracked something.

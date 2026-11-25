@@ -33,4 +33,4 @@ TELEMETRY_PREFIX=sim: FLAGSMITH_ENV_NAME=development pnpm simulate -- \
 The default rates are made up to exercise the pipeline. **Never present simulated numbers as experiment results.** Judges want real events, and `docs/results.md` uses only Production numbers from Flagsmith.
 
 ## smoke.ts
-Not written yet. The manual smoke test after each deploy is step 3 of `docs/deploy-amplify.md`.
+Not written yet. The manual smoke test after each deploy is step 3 of `docs/deploy-vercel.md`.
