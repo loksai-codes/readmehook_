@@ -17,3 +17,54 @@ body {
   background: var(--background);
   color: var(--foreground);
 }
+
+/* shiki code blocks (FR-4.4) */
+.rh-code pre {
+  margin: 0;
+  padding: 1rem 1.25rem;
+  overflow-x: auto;
+  background: transparent !important;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.8125rem;
+  line-height: 1.6;
+}
+.rh-code-lg pre {
+  font-size: 0.9375rem;
+  line-height: 1.75;
+}
+
+/* Terminal mockup typing animation (demo fallback) */
+.rh-type {
+  display: inline-block;
+  overflow: hidden;
+  width: 0;
+  animation: rh-type calc(var(--n) * 35ms) steps(var(--n), end) var(--d) forwards;
+}
+@keyframes rh-type {
+  to {
+    width: calc(var(--n) * 1ch);
+  }
+}
+.rh-cursor {
+  display: inline-block;
+  width: 0.6em;
+  height: 1.1em;
+  background: #34d399;
+  opacity: 0;
+  animation: rh-blink 1s step-end var(--d) infinite;
+}
+@keyframes rh-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rh-type {
+    animation: none;
+    width: auto;
+  }
+  .rh-cursor {
+    animation: none;
+    opacity: 1;
+  }
+}

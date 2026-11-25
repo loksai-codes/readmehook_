@@ -37,7 +37,7 @@ Pure functions in `lib/parser/`, no network, unit-tested.
 - FR-4.6 Unknown/missing flag value → render control (`architecture_first`).
 
 ### FR-5 Visitor identity (P1)
-- FR-5.1 Middleware sets `rh_vid` (UUID v4) HTTP-only, `SameSite=Lax`, 1-year cookie if absent.
+- FR-5.1 Middleware (`proxy.ts` in Next 16) sets `rh_vid` (UUID v4) HTTP-only, `SameSite=Lax`, 1-year cookie if absent.
 - FR-5.2 The same id is used for flag evaluation, every telemetry event, and Redis uniqueness sets.
 - FR-5.3 Bots (user-agent matches common crawler list incl. Discordbot, Twitterbot, Slackbot) get the control layout and are **not** identified or tracked.
 

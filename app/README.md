@@ -9,4 +9,4 @@
 | `POST /api/track` | `api/track/route.ts` | FR-7.3 |
 | `GET /api/og/[owner]/[repo]` | `api/og/[owner]/[repo]/route.tsx` | FR-9.1 |
 
-`middleware.ts` (repo root) sets the `rh_vid` cookie (FR-5).
+`proxy.ts` (repo root; Next 16 renamed `middleware.ts` to `proxy.ts`) sets the `rh_vid` cookie for `/r/*` and `/api/track`, skipping bots (FR-5).

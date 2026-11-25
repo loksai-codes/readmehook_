@@ -17,7 +17,7 @@ flowchart LR
 
 ## Request flow for `/r/[owner]/[repo]`
 
-1. `middleware.ts` ensures `rh_vid` cookie; marks bots.
+1. `proxy.ts` (Next 16 name for middleware) ensures the `rh_vid` cookie for humans; bots get none. The page classifies the request (human / bot / prefetch) via `lib/identity`.
 2. Server component loads `getRepoSnapshot(owner, repo)` (cache → GitHub).
 3. `parseReadme(snapshot)` → `ParsedReadme` (pure).
 4. If human: `evaluateHeroLayout(rh_vid, traits)` → variant (exposure recorded). If bot: control, no identify.

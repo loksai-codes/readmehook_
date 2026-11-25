@@ -19,6 +19,9 @@ export const keys = {
   /** Stale RepoSnapshot fallback, 24 h. */
   ghStale: (owner: string, repo: string) => `gh:stale:${repoSlugKey(owner, repo)}`,
 
+  /** Cached byte size of a demo media URL (FR-4.5 size cap), 24 h. */
+  mediaSize: (url: string) => `media:size:${url}`,
+
   /** Hash of per-variant counters for one repo. `slug` = `owner/repo`. */
   repoVariant: (slug: string, variant: string) =>
     `${prefix()}repo:${slug.toLowerCase()}:variant:${variant}`,
