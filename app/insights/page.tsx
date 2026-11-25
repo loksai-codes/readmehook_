@@ -69,7 +69,9 @@ async function Dashboard({ resultsUrl }: { resultsUrl: string }) {
   return (
     <>
       {counters.prefix ? (
-        <p className="mt-4 font-mono text-xs text-amber-200/80">Reading counters under prefix {counters.prefix}</p>
+        <p className="mt-4 font-mono text-xs text-amber-200/80" data-telemetry-prefix={counters.prefix}>
+          Reading counters under prefix {counters.prefix}
+        </p>
       ) : null}
 
       <section aria-labelledby="overview" className="mt-10">

@@ -26,7 +26,7 @@ flowchart LR
 
 ## Telemetry flow
 
-Client `trackExperimentEvent` → `POST /api/track` (`sendBeacon` for unload/outbound) → validate → Flagsmith event (identity `rh_vid`) + Redis counters → flush after response.
+Client `trackExperimentEvent` → `POST /api/track` (`sendBeacon` for unload/outbound) → validate → Flagsmith event (identity `rh_vid`) + Redis counters → Flagsmith flush awaited **before** the response (AWS Amplify/Lambda can freeze right after it; `after()` is unsupported there).
 
 ## Redis keys
 
@@ -38,6 +38,8 @@ Client `trackExperimentEvent` → `POST /api/track` (`sendBeacon` for unload/out
 | `{p}repo:{owner}/{repo}:variant:{v}:uniq:{metric}` | set | visitor ids already counted |
 | `{p}exp:variant:{v}` | hash | global totals |
 | `{p}exp:lang:{lang}:variant:{v}` | hash | language breakdown |
+| `{p}exp:langs` | set | languages with counters (for `/insights`) |
+| `{p}rl:{rh_vid}` | string, 60 s | `/api/track` rate limit |
 | `{p}rl:{vid}` | counter, 60 s | rate limit |
 
 `{p}` = `TELEMETRY_PREFIX` (`""` prod, `sim:` simulation).

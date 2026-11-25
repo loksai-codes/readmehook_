@@ -9,7 +9,7 @@ Reference: https://docs.flagsmith.com/experimentation/set-up-with-a-coding-agent
 1. Sign up / log in to Flagsmith Cloud. Create project **ReadmeHook**.
 2. Keep two environments: **Development** (local + simulated traffic) and **Production** (real visitors only).
 3. Confirm Experimentation is enabled for the project/environment and that the environment has its analytics warehouse connected (the setup prompt checks this; experiments can't record results without it). If the hackathon gave you a promo/plan for Experimentation, apply it now.
-4. Copy each environment's **server-side key** (`ser.…`) into `FLAGSMITH_SERVER_KEY` (Development key in `.env.local`, Production key in Vercel).
+4. Copy each environment's **server-side key** (`ser.…`) into `FLAGSMITH_SERVER_KEY` (Development key in `.env.local`, Production key in the Amplify environment variables, see docs/deploy-amplify.md).
 
 ## 1. Multivariate flag
 
