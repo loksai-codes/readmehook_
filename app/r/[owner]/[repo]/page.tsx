@@ -1,21 +1,48 @@
-import Link from 'next/link';
-import { after, connection } from 'next/server';
+import type { Metadata } from 'next';
+import { connection } from 'next/server';
 import { Suspense } from 'react';
 import { DevVariantToolbar } from '@/components/hero/DevVariantToolbar';
 import { HeroShell } from '@/components/hero/HeroShell';
 import { VariantHero } from '@/components/hero/VariantHero';
+import { SharePanel } from '@/components/share/SharePanel';
 import { BounceGuardrail, CardViewTracker } from '@/components/telemetry/CardTelemetry';
+import { Notice } from '@/components/ui/Notice';
+import { cardPath } from '@/lib/advice/share';
 import { evaluateHeroLayout } from '@/lib/flagsmith/evaluate';
 import { flushFlagsmith } from '@/lib/flagsmith/flush';
-import { buildHeroTraits, planVariant } from '@/lib/flagsmith/traits';
+import { buildHeroTraits, isCreatorView, planVariant } from '@/lib/flagsmith/traits';
 import type { HeroLayout } from '@/lib/flagsmith/variants';
-import { RateLimitedError, RepoNotFoundError } from '@/lib/github/errors';
-import { isValidSlug } from '@/lib/github/slug';
-import { getRepoSnapshot } from '@/lib/github/snapshot';
+import { loadRepoForPage } from '@/lib/github/load';
 import { getVisitorContext } from '@/lib/identity/server';
 import { parseReadme } from '@/lib/parser';
+import { siteUrl } from '@/lib/site';
 
 type Props = PageProps<'/r/[owner]/[repo]'>;
+
+/** FR-9.1: unfurl metadata. Built from the URL only, so it never waits on GitHub. */
+export async function generateMetadata({ params }: Pick<Props, 'params'>): Promise<Metadata> {
+  const { owner: rawOwner, repo: rawRepo } = await params;
+  const owner = decodeURIComponent(rawOwner);
+  const repo = decodeURIComponent(rawRepo);
+  const title = `${owner}/${repo} · ReadmeHook`;
+  const description = `Would you clone ${repo}? The quickstart, architecture and demo for ${owner}/${repo} on one card.`;
+  const image = `${siteUrl()}/api/og/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}`;
+  const url = `${siteUrl()}${cardPath(owner, repo)}`;
+  return {
+    title,
+    description,
+    alternates: { canonical: url },
+    openGraph: {
+      type: 'website',
+      siteName: 'ReadmeHook',
+      title,
+      description,
+      url,
+      images: [{ url: image, width: 1200, height: 630, alt: `${owner}/${repo} on ReadmeHook` }],
+    },
+    twitter: { card: 'summary_large_image', title, description, images: [image] },
+  };
+}
 
 export default function RepoCardPage({ params, searchParams }: Props) {
   return (
@@ -32,50 +59,36 @@ async function RepoCard({ params, searchParams }: Pick<Props, 'params' | 'search
   // (cacheComponents), where their fetches are aborted and would log as failures.
   await connection();
   const [{ owner: rawOwner, repo: rawRepo }, query] = await Promise.all([params, searchParams]);
-  const owner = decodeURIComponent(rawOwner);
-  const repo = decodeURIComponent(rawRepo);
-
-  if (!isValidSlug(owner, repo)) {
-    return <Notice title="That doesn't look like a GitHub repo" body={`"${owner}/${repo}" isn't a valid owner/repo.`} />;
-  }
-
-  let snapshot;
-  try {
-    ({ snapshot } = await getRepoSnapshot(owner, repo));
-  } catch (err) {
-    if (err instanceof RepoNotFoundError) {
-      return <Notice title="Repo not found or private" body={`We couldn't find a public repo at ${owner}/${repo}.`} />;
-    }
-    if (err instanceof RateLimitedError) {
-      return <Notice title="GitHub is rate-limiting us" body="Try again in a minute." />;
-    }
-    console.error('[r/page] snapshot failed', err);
-    return <Notice title="GitHub didn't answer" body="Something went wrong fetching this repo. Try again shortly." />;
-  }
+  const load = await loadRepoForPage(decodeURIComponent(rawOwner), decodeURIComponent(rawRepo));
+  if (!load.ok) return <Notice title={load.title} body={load.body} />;
+  const { snapshot } = load;
 
   const parsed = parseReadme(snapshot);
   const visitor = await getVisitorContext(query.ref);
   const traits = buildHeroTraits(snapshot, parsed, visitor.referrerSource);
+  const creator = isCreatorView(query.created);
 
-  // FR-6: identify + evaluate (records the exposure) only for real human page views. The exposure
-  // is flushed after the response via after() (Vercel waitUntil). Fails open to control.
-  const plan = planVariant(query.variant, visitor);
+  // FR-6: identify + evaluate (records the exposure) only for real human page views, then flush
+  // before rendering: Amplify (Lambda) can freeze right after the response. Fails open to control.
+  const plan = planVariant(query.variant, visitor, { creator });
   let variant: HeroLayout;
   if (plan.source === 'flagsmith') {
     variant = await evaluateHeroLayout(plan.visitorId, traits);
-    after(flushFlagsmith);
+    await flushFlagsmith();
   } else {
     variant = plan.variant;
   }
-  const path = `/r/${snapshot.meta.owner}/${snapshot.meta.repo}`;
-  const repoSlug = snapshot.meta.fullName;
+  const { owner, repo, fullName: repoSlug } = snapshot.meta;
+  // Only experiment views send telemetry; the creator's own view and bots never do.
+  const tracked = plan.source === 'flagsmith' || plan.source === 'forced';
 
   return (
     <>
+      {creator ? <SharePanel owner={owner} repo={repo} siteUrl={siteUrl()} /> : null}
       <HeroShell meta={snapshot.meta} cloneCommand={parsed.cloneCommand} variant={variant}>
         <VariantHero variant={variant} snapshot={snapshot} parsed={parsed} />
       </HeroShell>
-      {plan.source !== 'control' ? (
+      {tracked ? (
         <>
           <CardViewTracker repoSlug={repoSlug} variant={variant} />
           <BounceGuardrail repoSlug={repoSlug} variant={variant} />
@@ -83,7 +96,7 @@ async function RepoCard({ params, searchParams }: Pick<Props, 'params' | 'search
       ) : null}
       {process.env.NODE_ENV !== 'production' ? (
         <DevVariantToolbar
-          path={path}
+          path={cardPath(owner, repo)}
           variant={variant}
           source={plan.source}
           kind={visitor.kind}
@@ -103,20 +116,6 @@ function CardSkeleton() {
       <div className="mt-3 h-5 w-full max-w-xl rounded bg-zinc-900" />
       <div className="mt-6 h-12 rounded-lg bg-zinc-900" />
       <div className="mt-6 h-[24rem] rounded-xl bg-zinc-900 sm:h-[26rem]" />
-    </div>
-  );
-}
-
-function Notice({ title, body }: { title: string; body: string }) {
-  return (
-    <div className="mx-auto max-w-4xl px-6 py-10">
-      <div className="rounded-lg border border-zinc-800 bg-zinc-900 p-6">
-        <h1 className="text-xl font-medium text-zinc-50">{title}</h1>
-        <p className="mt-2 text-zinc-400">{body}</p>
-        <Link href="/" className="mt-4 inline-block rounded-sm text-sm text-zinc-200 underline underline-offset-4 decoration-zinc-600 transition-colors hover:decoration-zinc-300 focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:outline-none">
-          Try another repo
-        </Link>
-      </div>
     </div>
   );
 }

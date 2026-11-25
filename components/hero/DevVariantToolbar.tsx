@@ -13,7 +13,7 @@ export function DevVariantToolbar({
 }: {
   path: string;
   variant: HeroLayout;
-  source: 'forced' | 'flagsmith' | 'control';
+  source: 'forced' | 'flagsmith' | 'control' | 'creator';
   kind: RequestKind;
   visitorId: string | null;
   traits: HeroTraits;
@@ -45,7 +45,9 @@ export function DevVariantToolbar({
             ? ' (forced, no exposure)'
             : source === 'flagsmith'
               ? ' (Flagsmith, exposure recorded if the experiment is running)'
-              : ' (control, not identified)'}{' '}
+              : source === 'creator'
+                ? ' (creator view, not identified)'
+                : ' (control, not identified)'}{' '}
           · request={kind} · rh_vid=
           {visitorId ?? 'none'}
         </p>

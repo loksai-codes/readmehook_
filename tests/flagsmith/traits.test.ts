@@ -49,6 +49,15 @@ describe('dev ?variant= override', () => {
 });
 
 describe('planVariant', () => {
+  it("gives the creator's own view control without identifying them", () => {
+    expect(planVariant(undefined, HUMAN, { creator: true })).toEqual({ source: 'creator', variant: 'architecture_first' });
+  });
+
+  it('ignores ?variant= in production builds, even for the creator view', () => {
+    vi.stubEnv('NODE_ENV', 'production');
+    expect(planVariant('quickstart_first', HUMAN, { creator: true })).toEqual({ source: 'creator', variant: 'architecture_first' });
+  });
+
   it('sends human page views with an rh_vid to Flagsmith', () => {
     expect(planVariant(undefined, HUMAN)).toEqual({ source: 'flagsmith', visitorId: VID });
   });

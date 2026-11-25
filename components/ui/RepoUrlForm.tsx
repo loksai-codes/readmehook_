@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { useId, useState, type FormEvent } from 'react';
+import { cardPath } from '@/lib/advice/share';
 import { parseRepoInput } from '@/lib/github/slug';
 
 /** FR-1.1 / FR-1.2: accepts a GitHub URL or owner/repo and navigates to the card. */
@@ -20,7 +21,8 @@ export function RepoUrlForm() {
       return;
     }
     setError(null);
-    router.push(`/r/${encodeURIComponent(slug.owner)}/${encodeURIComponent(slug.repo)}`);
+    // FR-1.3: the creator lands on their card with the share panel; their view is not counted.
+    router.push(`${cardPath(slug.owner, slug.repo)}?created=1`);
   }
 
   return (

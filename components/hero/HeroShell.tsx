@@ -1,33 +1,9 @@
 import type { ReactNode } from 'react';
 import { CopyCommandButton } from '@/components/telemetry/CopyCommandButton';
 import { GitHubCta } from '@/components/telemetry/GitHubCta';
+import { languageColor } from '@/lib/github/languages';
 import type { RepoMeta } from '@/lib/github/types';
 import type { HeroLayout } from '@/lib/flagsmith/variants';
-
-const LANGUAGE_COLORS: Record<string, string> = {
-  TypeScript: '#3178c6',
-  JavaScript: '#f1e05a',
-  Python: '#3572A5',
-  Rust: '#dea584',
-  Go: '#00ADD8',
-  Java: '#b07219',
-  'C++': '#f34b7d',
-  C: '#555555',
-  'C#': '#178600',
-  Ruby: '#701516',
-  PHP: '#4F5D95',
-  Swift: '#F05138',
-  Kotlin: '#A97BFF',
-  Shell: '#89e051',
-  Zig: '#ec915c',
-  Elixir: '#6e4a7e',
-  Dart: '#00B4AB',
-  Vue: '#41b883',
-  Svelte: '#ff3e00',
-  Lua: '#000080',
-  HTML: '#e34c26',
-  CSS: '#563d7c',
-};
 
 const compact = new Intl.NumberFormat('en', { notation: 'compact', maximumFractionDigits: 1 });
 
@@ -72,7 +48,7 @@ export function HeroShell({
               <span
                 aria-hidden="true"
                 className="h-2 w-2 rounded-full"
-                style={{ backgroundColor: LANGUAGE_COLORS[meta.language] ?? '#a1a1aa' }}
+                style={{ backgroundColor: languageColor(meta.language) }}
               />
               {meta.language}
             </li>

@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
+import { siteUrl } from '@/lib/site';
 import './globals.css';
 
 const geistSans = Geist({
@@ -13,6 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(siteUrl()),
   title: 'ReadmeHook — would a developer clone your repo?',
   description:
     'Paste a GitHub repo, get a shareable landing card, and let a live A/B test find the hero that makes developers clone.',

@@ -67,7 +67,7 @@ Leave it **not started** until the code is deployed and verified. Then start it 
 
 ## 6. Current setup (created 2026-11-25 via the Flagsmith CLI, Cloud)
 
-No keys here: server keys live in `.env.local` (Development) and the Vercel project's Production environment variables; the admin API key lives outside the repo.
+No keys here: server keys live in `.env.local` (Development) and the Amplify production branch environment variables; the admin API key lives outside the repo.
 
 | | Development | Production |
 |---|---|---|
@@ -80,7 +80,7 @@ No keys here: server keys live in `.env.local` (Development) and the Vercel proj
 
 Allocation in both: rollout 100%, `quickstart_first` 50%, `demo_gif_first` 0%, control the remaining 50%. The bounce metric's expected direction is `not_increase` (guardrail).
 
-Start Production only after the Vercel deploy is verified:
+Start Production only after the Amplify deploy is verified (docs/deploy-amplify.md):
 
 ```bash
 flagsmith api -X POST api/v1/environments/iKpcbAp4Uc2tHEaYZuwCre/experiments/485/start/
@@ -88,7 +88,7 @@ flagsmith api -X POST api/v1/environments/iKpcbAp4Uc2tHEaYZuwCre/experiments/485
 
 Dashboard: https://app.flagsmith.com/project/56121/environment/iKpcbAp4Uc2tHEaYZuwCre/experiments/485
 
-## 7. Vercel environment variables (project `loksai/readmehook`)
+## 7. Vercel environment variables (project `loksai/readmehook`, fallback host; production runs on Amplify, see docs/deploy-amplify.md)
 
 | Variable | Production | Preview + Development |
 |---|---|---|
