@@ -64,3 +64,26 @@ Leave it **not started** until the code is deployed and verified. Then start it 
 - **No exposures** → variation without a key; flag requested before identify; events not flushed (serverless!).
 - **Conversions missing** → event name mismatch, or different identifier between exposure and event.
 - **Nothing in Production** → still pointing at the Development key.
+
+## 6. Current setup (created 2026-11-25 via the Flagsmith CLI, Cloud)
+
+No keys here: server keys live in `.env.local` (Development) and the Amplify environment (Production); the admin API key lives outside the repo.
+
+| | Development | Production |
+|---|---|---|
+| Project | ReadmeHook (56121) | ReadmeHook (56121) |
+| Environment key (client-side id) | `Cs3wRiFhcy9fdwkyc9XvqY` | `iKpcbAp4Uc2tHEaYZuwCre` |
+| Flag `repo_hero_layout` | id 304390, control `architecture_first`, enabled | same |
+| Variations | `quickstart_first` (36852), `demo_gif_first` (36853) | same |
+| Metrics: intent / clone / outbound / bounce | 463 / 464 / 465 / 466 | 467 / 468 / 469 / 470 |
+| Experiment "Hero layout: quickstart vs architecture" | 484, **running** (verification) | 485, **created, not started** |
+
+Allocation in both: rollout 100%, `quickstart_first` 50%, `demo_gif_first` 0%, control the remaining 50%. The bounce metric's expected direction is `not_increase` (guardrail).
+
+Start Production only after the Amplify deploy is verified:
+
+```bash
+flagsmith api -X POST api/v1/environments/iKpcbAp4Uc2tHEaYZuwCre/experiments/485/start/
+```
+
+Dashboard: https://app.flagsmith.com/project/56121/environment/iKpcbAp4Uc2tHEaYZuwCre/experiments/485

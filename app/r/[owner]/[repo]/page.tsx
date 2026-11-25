@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { connection } from 'next/server';
 import { Suspense } from 'react';
 import { DevVariantToolbar } from '@/components/hero/DevVariantToolbar';
 import { HeroShell } from '@/components/hero/HeroShell';
@@ -27,6 +28,9 @@ export default function RepoCardPage({ params, searchParams }: Props) {
 }
 
 async function RepoCard({ params, searchParams }: Pick<Props, 'params' | 'searchParams'>) {
+  // Request-time only: GitHub/Redis/Flagsmith must never run inside the static prerender
+  // (cacheComponents), where their fetches are aborted and would log as failures.
+  await connection();
   const [{ owner: rawOwner, repo: rawRepo }, query] = await Promise.all([params, searchParams]);
   const owner = decodeURIComponent(rawOwner);
   const repo = decodeURIComponent(rawRepo);

@@ -100,9 +100,9 @@ Pure functions in `lib/parser/`, no network, unit-tested.
 ## 4. Acceptance checklist (Phase 1 done = all true)
 
 - [ ] Pasting `vercel/next.js` produces a card in < 2 s and a cached reload in < 500 ms.
-- [ ] Two different browsers can receive different variants; each stays sticky on refresh.
+- [x] Two different browsers can receive different variants; each stays sticky on refresh.
 - [ ] Copying the command and clicking GitHub both appear as events in Flagsmith for that identity.
-- [ ] Experiment shows exposures for both variations in the Flagsmith dashboard.
+- [x] Experiment shows exposures for both variations in the Flagsmith dashboard.
 - [ ] Bounce guardrail fires when closing a tab within 5 s without converting, and not otherwise.
 - [ ] `/stats` shows Stage 1 audit and the export button copies valid Markdown.
 - [ ] Discord unfurl shows the OG image.
