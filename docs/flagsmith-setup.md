@@ -87,3 +87,16 @@ flagsmith api -X POST api/v1/environments/iKpcbAp4Uc2tHEaYZuwCre/experiments/485
 ```
 
 Dashboard: https://app.flagsmith.com/project/56121/environment/iKpcbAp4Uc2tHEaYZuwCre/experiments/485
+
+## 7. Vercel environment variables (project `loksai/readmehook`)
+
+| Variable | Production | Preview + Development |
+|---|---|---|
+| `FLAGSMITH_SERVER_KEY` | Flagsmith Production server key `vercel-production` (id 10571) | Flagsmith Development server key |
+| `FLAGSMITH_ENV_NAME` | `production` | `development` |
+| `TELEMETRY_PREFIX` | unset (= no prefix) | `dev:` |
+| `GITHUB_TOKEN`, `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN` | shared | shared |
+| `ADMIN_TOKEN` | generated, same in all targets | same |
+| `NEXT_PUBLIC_SITE_URL` | set after the first deploy, to the production URL | optional |
+
+Local `.env.local` uses the Development key and `TELEMETRY_PREFIX=dev:`. Production and dev share one Upstash database; the prefix keeps dev counters out of Production's live counters.

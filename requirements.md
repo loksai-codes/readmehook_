@@ -95,7 +95,7 @@ Pure functions in `lib/parser/`, no network, unit-tested.
 | `FLAGSMITH_API_URL` | server | Optional; defaults to Flagsmith Cloud |
 | `NEXT_PUBLIC_SITE_URL` | both | Absolute URL for OG + share links |
 | `ADMIN_TOKEN` | server | Gates the `/insights` admin drawer |
-| `TELEMETRY_PREFIX` | server | `""` in prod, `sim:` for simulation |
+| `TELEMETRY_PREFIX` | server | `""` in prod, `dev:` for local + Vercel Preview, `sim:` for simulation |
 
 ## 4. Acceptance checklist (Phase 1 done = all true)
 
