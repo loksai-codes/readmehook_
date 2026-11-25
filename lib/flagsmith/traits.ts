@@ -27,7 +27,22 @@ export function devVariantOverride(param: string | string[] | undefined): HeroLa
   return HERO_LAYOUTS.includes(value as HeroLayout) ? (value as HeroLayout) : null;
 }
 
-/** Milestone 2: no Flagsmith yet, so every visitor gets control unless overridden in dev. */
-export function resolveVariantForMilestone2(param: string | string[] | undefined): HeroLayout {
-  return devVariantOverride(param) ?? CONTROL;
+export type VariantPlan =
+  | { source: 'forced'; variant: HeroLayout }
+  | { source: 'flagsmith'; visitorId: string }
+  | { source: 'control'; variant: HeroLayout };
+
+/**
+ * Decides how the card picks its hero (FR-6.2). A dev `?variant=` override wins and records no
+ * exposure; real human page views with an `rh_vid` go to Flagsmith; bots, prefetches and requests
+ * without an id get control and are never identified.
+ */
+export function planVariant(
+  param: string | string[] | undefined,
+  visitor: { kind: 'human' | 'bot' | 'prefetch'; visitorId: string | null },
+): VariantPlan {
+  const forced = devVariantOverride(param);
+  if (forced) return { source: 'forced', variant: forced };
+  if (visitor.kind === 'human' && visitor.visitorId) return { source: 'flagsmith', visitorId: visitor.visitorId };
+  return { source: 'control', variant: CONTROL };
 }

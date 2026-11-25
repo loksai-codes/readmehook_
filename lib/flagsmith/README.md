@@ -1,6 +1,7 @@
 # lib/flagsmith (server-only)
-- `client.ts` — `@flagsmith/nodejs` (>= 9.1, formerly `flagsmith-nodejs`) singleton, events enabled, `FLAGSMITH_SERVER_KEY`.
-- `variants.ts` — flag/variant contract (done).
-- `evaluate.ts` — `evaluateHeroLayout(visitorId, traits)` via the experiment-flag API so exposures record; fail open to CONTROL.
-- `track.ts` — `trackFlagsmithEvent(visitorId, event)` + flush for serverless.
-Check current method names in Flagsmith docs: https://docs.flagsmith.com/experimentation/set-up-with-a-coding-agent
+- `client.ts` — `@flagsmith/nodejs` (>= 9.1) singleton, `enableEvents: true`, flush timer off (`flushInterval: 0`) for Lambda. Missing `FLAGSMITH_SERVER_KEY` → null (control, no events).
+- `variants.ts` — flag/variant contract.
+- `traits.ts` — `buildHeroTraits()` and `planVariant()` (dev override / Flagsmith / control for bots, prefetch, no id).
+- `evaluate.ts` — `evaluateHeroLayout(visitorId, traits)` via `getExperimentFlag()` (records the exposure); fails open to CONTROL.
+- `track.ts` — `trackFlagsmithEvent(visitorId, event)` via `trackEvent(event, { identifier })`.
+- `flush.ts` — `flushFlagsmith()`: awaited `flushEvents()` capped at 1.5 s, before every response that tracked something.

@@ -21,3 +21,12 @@ export const COUNTER_FIELD: Record<EventName, string> = {
   developer_intent: 'intent',
   bounce_under_5s: 'bounces',
 };
+
+export function isEventName(value: unknown): value is EventName {
+  return typeof value === 'string' && (ALLOWED_EVENTS as readonly string[]).includes(value);
+}
+
+/** FR-7.6 */
+export const TRACK_RATE_LIMIT_PER_MIN = 60;
+
+export const TRACK_ENDPOINT = '/api/track';

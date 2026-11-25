@@ -8,7 +8,7 @@ ReadmeHook turns a public GitHub repo into a shareable landing card (`/r/owner/r
 
 ## Stack
 
-Next.js (App Router) · TypeScript (strict) · Tailwind CSS · `next/og` · `@flagsmith/nodejs` (server evaluation + events; the SDK moved from the old `flagsmith-nodejs` package, which stops at 8.x, to `@flagsmith/nodejs` for 9.x) · `@upstash/redis` · `mermaid` (client only) · `shiki` · Vitest · pnpm · Vercel.
+Next.js (App Router) · TypeScript (strict) · Tailwind CSS · `next/og` · `@flagsmith/nodejs` (server evaluation + events; the SDK moved from the old `flagsmith-nodejs` package, which stops at 8.x, to `@flagsmith/nodejs` for 9.x) · `@upstash/redis` · `mermaid` (client only) · `shiki` · Vitest · pnpm · AWS Amplify (Lambda).
 
 ## Commands
 
@@ -49,7 +49,7 @@ tests/                    vitest specs + README fixtures
 2. **Flag values are a contract.** `lib/flagsmith/variants.ts` exports `HERO_LAYOUTS = ['architecture_first','quickstart_first','demo_gif_first'] as const` and `CONTROL = 'architecture_first'`. Unknown value → control.
 3. **Identify before evaluating.** Exposure is recorded when the experiment flag is requested for an identity. Always evaluate with the `rh_vid` identity + traits, using the SDK's experiment-flag API, and only for real human page views (skip bots, OG, prefetch).
 4. **Same identifier everywhere.** The `rh_vid` cookie is the Flagsmith identity, the telemetry identity, and the Redis uniqueness key. `/api/track` reads it from the cookie, never from the request body.
-5. **Flush events on serverless.** After tracking in a route handler, flush/close per the Flagsmith Node SDK docs (or use Next's `after()` to do it post-response). Missing flushes = missing exposures.
+5. **Flush events on serverless.** The app deploys to AWS Amplify (Lambda), which can freeze the process as soon as the response is sent, so `after()` is not safe. The SDK's flush timer is off (`flushInterval: 0`); every exposure or event is followed by an awaited `flushFlagsmith()` (`lib/flagsmith/flush.ts`, `flushEvents()` capped at 1.5 s) **before** the response. Missing flushes = missing exposures.
 6. **Server decides the variant.** Evaluate in the server component, pass `variant` as a prop. No client re-evaluation, no layout flicker.
 7. **Variants differ only in the hero block.** Shared shell (name, stars, clone box, GitHub CTA) is identical, so the test is fair.
 8. **Parser is pure.** No fetch, no Date, no randomness in `lib/parser/`. Every new rule gets a test with a fixture in `tests/fixtures/`.

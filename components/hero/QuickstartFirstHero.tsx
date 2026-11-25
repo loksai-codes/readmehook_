@@ -1,5 +1,5 @@
 import { CodeBlock } from '@/components/ui/CodeBlock';
-import { CopyButton } from '@/components/ui/CopyButton';
+import { CopyCommandButton } from '@/components/telemetry/CopyCommandButton';
 import type { RepoMeta } from '@/lib/github/types';
 import { pickManifest } from '@/lib/parser';
 import type { Manifest } from '@/lib/github/types';
@@ -22,8 +22,15 @@ export function QuickstartFirstHero({
   return (
     <HeroFrame
       eyebrow="Quickstart"
-      title="Run it in 30 seconds"
-      actions={<CopyButton text={quickstart.command} label="Copy command" />}
+      title="Run it locally"
+      actions={
+        <CopyCommandButton
+          text={quickstart.command}
+          label="Copy command"
+          repoSlug={meta.fullName}
+          variant="quickstart_first"
+        />
+      }
       caption={
         quickstart.source === 'extracted'
           ? `From the README${quickstart.startLine ? ` (line ${quickstart.startLine})` : ''}`
@@ -31,7 +38,7 @@ export function QuickstartFirstHero({
       }
     >
       <div className="flex h-full flex-col justify-center overflow-auto px-5 py-6">
-        <div className="rounded-lg border border-zinc-800 bg-[#0d1117] shadow-[0_0_0_1px_rgba(52,211,153,0.06),0_20px_60px_-20px_rgba(52,211,153,0.25)]">
+        <div className="rounded-lg border border-zinc-800 bg-[#0d1117]">
           <div className="flex items-center gap-1.5 border-b border-zinc-800 px-4 py-2.5" aria-hidden="true">
             <span className="h-2.5 w-2.5 rounded-full bg-zinc-700" />
             <span className="h-2.5 w-2.5 rounded-full bg-zinc-700" />

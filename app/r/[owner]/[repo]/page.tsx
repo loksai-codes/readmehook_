@@ -3,7 +3,11 @@ import { Suspense } from 'react';
 import { DevVariantToolbar } from '@/components/hero/DevVariantToolbar';
 import { HeroShell } from '@/components/hero/HeroShell';
 import { VariantHero } from '@/components/hero/VariantHero';
-import { buildHeroTraits, devVariantOverride, resolveVariantForMilestone2 } from '@/lib/flagsmith/traits';
+import { BounceGuardrail, CardViewTracker } from '@/components/telemetry/CardTelemetry';
+import { evaluateHeroLayout } from '@/lib/flagsmith/evaluate';
+import { flushFlagsmith } from '@/lib/flagsmith/flush';
+import { buildHeroTraits, planVariant } from '@/lib/flagsmith/traits';
+import type { HeroLayout } from '@/lib/flagsmith/variants';
 import { RateLimitedError, RepoNotFoundError } from '@/lib/github/errors';
 import { isValidSlug } from '@/lib/github/slug';
 import { getRepoSnapshot } from '@/lib/github/snapshot';
@@ -49,21 +53,35 @@ async function RepoCard({ params, searchParams }: Pick<Props, 'params' | 'search
   const visitor = await getVisitorContext(query.ref);
   const traits = buildHeroTraits(snapshot, parsed, visitor.referrerSource);
 
-  // Milestone 2: control for everyone (bots included, FR-5.3) unless ?variant= is forced in dev.
-  // Milestone 3 swaps this for Flagsmith evaluation of human page views.
-  const variant = resolveVariantForMilestone2(query.variant);
+  // FR-6: identify + evaluate (records the exposure) only for real human page views, then flush
+  // before rendering so the exposure is posted before Lambda can freeze. Fails open to control.
+  const plan = planVariant(query.variant, visitor);
+  let variant: HeroLayout;
+  if (plan.source === 'flagsmith') {
+    variant = await evaluateHeroLayout(plan.visitorId, traits);
+    await flushFlagsmith();
+  } else {
+    variant = plan.variant;
+  }
   const path = `/r/${snapshot.meta.owner}/${snapshot.meta.repo}`;
+  const repoSlug = snapshot.meta.fullName;
 
   return (
     <>
       <HeroShell meta={snapshot.meta} cloneCommand={parsed.cloneCommand} variant={variant}>
         <VariantHero variant={variant} snapshot={snapshot} parsed={parsed} />
       </HeroShell>
+      {plan.source !== 'control' ? (
+        <>
+          <CardViewTracker repoSlug={repoSlug} variant={variant} />
+          <BounceGuardrail repoSlug={repoSlug} variant={variant} />
+        </>
+      ) : null}
       {process.env.NODE_ENV !== 'production' ? (
         <DevVariantToolbar
           path={path}
           variant={variant}
-          overridden={devVariantOverride(query.variant) !== null}
+          source={plan.source}
           kind={visitor.kind}
           visitorId={visitor.visitorId}
           traits={traits}
@@ -89,9 +107,9 @@ function Notice({ title, body }: { title: string; body: string }) {
   return (
     <div className="mx-auto max-w-4xl px-6 py-10">
       <div className="rounded-lg border border-zinc-800 bg-zinc-900 p-6">
-        <h1 className="text-xl font-semibold text-zinc-50">{title}</h1>
+        <h1 className="text-xl font-medium text-zinc-50">{title}</h1>
         <p className="mt-2 text-zinc-400">{body}</p>
-        <Link href="/" className="mt-4 inline-block text-sm text-emerald-400 underline-offset-4 hover:underline">
+        <Link href="/" className="mt-4 inline-block rounded-sm text-sm text-zinc-200 underline underline-offset-4 decoration-zinc-600 transition-colors hover:decoration-zinc-300 focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:outline-none">
           Try another repo
         </Link>
       </div>

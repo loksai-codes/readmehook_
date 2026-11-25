@@ -2,18 +2,18 @@ import Link from 'next/link';
 import { HERO_LAYOUTS, type HeroLayout, type HeroTraits } from '@/lib/flagsmith/variants';
 import type { RequestKind } from '@/lib/identity/request';
 
-/** Development-only review aid (Milestone 2). The page never renders this when NODE_ENV === 'production'. */
+/** Development-only review aid. The page never renders this when NODE_ENV === 'production'. */
 export function DevVariantToolbar({
   path,
   variant,
-  overridden,
+  source,
   kind,
   visitorId,
   traits,
 }: {
   path: string;
   variant: HeroLayout;
-  overridden: boolean;
+  source: 'forced' | 'flagsmith' | 'control';
   kind: RequestKind;
   visitorId: string | null;
   traits: HeroTraits;
@@ -41,7 +41,12 @@ export function DevVariantToolbar({
         </div>
         <p className="mt-2 break-all">
           variant={variant}
-          {overridden ? ' (forced)' : ' (default: control until Flagsmith is wired)'} · request={kind} · rh_vid=
+          {source === 'forced'
+            ? ' (forced, no exposure)'
+            : source === 'flagsmith'
+              ? ' (Flagsmith, exposure recorded if the experiment is running)'
+              : ' (control, not identified)'}{' '}
+          · request={kind} · rh_vid=
           {visitorId ?? 'none'}
         </p>
         <p className="mt-1 break-all">traits={JSON.stringify(traits)}</p>
