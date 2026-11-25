@@ -14,7 +14,7 @@ A live A/B test on that card finds the hero that makes developers copy the clone
 [![Vercel](https://img.shields.io/badge/Deployed_on-Vercel-000000?style=flat-square&logo=vercel&logoColor=white)](https://vercel.com)
 [![Tested with Vitest](https://img.shields.io/badge/tested_with-Vitest-6E9F18?style=flat-square&logo=vitest&logoColor=white)](https://vitest.dev)
 
-[Live demo](#live) · [Results](docs/results.md) · [Experiment plan](docs/experiment-plan.md) · [How it works](#how-it-works) · [Run it](#run-it-locally)
+[Live demo](https://readmehook.vercel.app) · [Insights](https://readmehook.vercel.app/insights) · [Results](docs/results.md) · [Experiment plan](docs/experiment-plan.md) · [How it works](#how-it-works) · [Run it](#run-it-locally)
 
 <br/>
 
@@ -30,7 +30,7 @@ Built for **Toggle Wars, the Flagsmith Experimentation Hackathon** (WeMakeDevs) 
 
 <a id="live"></a>
 
-> **Live:** `https://<your-project>.vercel.app` · **Dashboard:** `/insights` · **Source of truth:** the Flagsmith results page linked from the dashboard
+> **Live:** [readmehook.vercel.app](https://readmehook.vercel.app) · **Try it:** [vercel/next.js card](https://readmehook.vercel.app/r/vercel/next.js) · **Dashboard:** [/insights](https://readmehook.vercel.app/insights) · **Source of truth:** the Flagsmith results page linked from the dashboard
 
 ---
 

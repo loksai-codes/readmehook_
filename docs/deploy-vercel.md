@@ -37,9 +37,9 @@ vercel deploy --prod
 
 ## Launch checklist (requirements.md §4)
 
-1. [ ] `FLAGSMITH_SERVER_KEY` (Production) is set, then deploy.
+1. [x] `FLAGSMITH_SERVER_KEY` (Production) is set, then deploy. *(Live at https://readmehook.vercel.app, 2026-11-25.)*
 2. [ ] Pasting `vercel/next.js` produces a card in < 2 s and a cached reload in < 500 ms.
-3. [ ] Smoke test: `/`, `/r/vercel/next.js`, `/r/vercel/next.js/stats`, `/api/og/vercel/next.js`, `/insights` all return 200; the card shows content, not only the loading skeleton.
+3. [x] Smoke test: `/`, `/r/vercel/next.js`, `/r/vercel/next.js/stats`, `/api/og/vercel/next.js`, `/insights` all return 200; the card shows content, not only the loading skeleton.
 4. [ ] Two different browsers can receive different variants; each stays sticky on refresh. *(Verified in Development.)*
 5. [ ] Copying the command and clicking GitHub both appear as events in Flagsmith for that identity.
 6. [ ] Experiment shows exposures for both variations in the Flagsmith dashboard. *(Verified in Development.)*
@@ -47,7 +47,7 @@ vercel deploy --prod
 8. [ ] `/stats` shows the Stage 1 audit and the export button copies valid Markdown.
 9. [ ] Discord unfurl shows the OG image (use a fresh `?ref=discord` URL; Discord caches unfurls).
 10. [x] Parser unit tests cover mermaid present/absent, quickstart tagged/untagged/absent, relative media, empty README.
-11. [ ] `?variant=` does nothing on the deployed site (dev-only; compiled out of production builds).
+11. [x] `?variant=` does nothing on the deployed site (dev-only; compiled out of production builds).
 
 ## Experiment
 
