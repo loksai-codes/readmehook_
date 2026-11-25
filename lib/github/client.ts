@@ -1,5 +1,6 @@
 import 'server-only';
 import { z } from 'zod';
+import { serverEnv } from '@/lib/env';
 import { GitHubError, RateLimitedError, RepoNotFoundError } from './errors';
 import { MANIFESTS, type Manifest, type RepoSnapshot } from './types';
 
@@ -33,7 +34,7 @@ function headers(): HeadersInit {
     'X-GitHub-Api-Version': '2022-11-28',
     'User-Agent': 'readmehook',
   };
-  const token = process.env.GITHUB_TOKEN;
+  const token = serverEnv('GITHUB_TOKEN', 'GitHub requests are unauthenticated (60 req/h limit)');
   if (token) h.Authorization = `Bearer ${token}`;
   return h;
 }
