@@ -3,4 +3,4 @@
 - `schema.ts` — `/api/track` body (allow-listed event, `owner/repo`, known variant; no identity).
 - `bounce.ts` — pure FR-7.4 decision.
 - `client.ts` — `trackExperimentEvent(name, { repoSlug, variant }, { beacon })` and `trackConversion()` (adds the visitor's first `developer_intent` per repo).
-- `server.ts` — `isRateLimited()`, `recordEvent()` dual-write: Flagsmith event (route flushes via `after()`), Redis SADD/HINCRBY counters.
+- `server.ts` — `isRateLimited()`, `recordEvent()` dual-write: Flagsmith event (route awaits the flush before responding), Redis SADD/HINCRBY counters.

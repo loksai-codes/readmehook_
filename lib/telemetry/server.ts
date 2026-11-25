@@ -59,7 +59,7 @@ export async function recordRedisCounters(visitorId: string, body: TrackBody): P
 /**
  * FR-7.3 dual-write. Every allow-listed event is buffered for Flagsmith under the `rh_vid` identity
  * (the experiment's source of truth) and counted in Redis (deduplicated per visitor). The caller
- * flushes Flagsmith with `after(flushFlagsmith)` when `flagsmith` is true (CLAUDE.md rule 5).
+ * awaits `flushFlagsmith()` before responding when `flagsmith` is true (CLAUDE.md rule 5).
  */
 export async function recordEvent(
   visitorId: string,

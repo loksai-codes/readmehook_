@@ -2,13 +2,13 @@ import 'server-only';
 import { getFlagsmith } from './client';
 
 /** Upper bound on how long a request waits for buffered Flagsmith events to be posted. */
-export const FLUSH_TIMEOUT_MS = 5000;
+export const FLUSH_TIMEOUT_MS = 1500;
 
 /**
- * FR-6.3 / CLAUDE.md rule 5: send buffered exposures and events now. Callers schedule it with
- * `after(flushFlagsmith)` so it runs once the response has streamed; on Vercel, `after()` is backed
- * by `waitUntil`, which keeps the function alive until the flush settles. Capped at FLUSH_TIMEOUT_MS
- * and never throws. Events still buffered when the cap hits go with the next flush on this instance.
+ * FR-6.3 / CLAUDE.md rule 5: send buffered exposures and events now. Awaited inline before the
+ * response, because AWS Amplify (Lambda) may freeze the process right after it and does not support
+ * `after()`. Capped at FLUSH_TIMEOUT_MS and never throws. Events still buffered when the cap hits are
+ * sent with the next flush on this instance.
  */
 export async function flushFlagsmith(timeoutMs: number = FLUSH_TIMEOUT_MS): Promise<void> {
   const flagsmith = getFlagsmith();
