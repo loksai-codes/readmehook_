@@ -3,9 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 vi.mock('server-only', () => ({}));
 
 const trackFlagsmithEvent = vi.fn();
-const flushFlagsmith = vi.fn();
 vi.mock('@/lib/flagsmith/track', () => ({ trackFlagsmithEvent: (...a: unknown[]) => trackFlagsmithEvent(...a) }));
-vi.mock('@/lib/flagsmith/flush', () => ({ flushFlagsmith: (...a: unknown[]) => flushFlagsmith(...a) }));
 
 const hincrby = vi.fn();
 const exec = vi.fn();
@@ -31,22 +29,16 @@ beforeEach(() => {
   vi.clearAllMocks();
   getRedis.mockImplementation(() => redis);
   trackFlagsmithEvent.mockReturnValue(true);
-  flushFlagsmith.mockResolvedValue(undefined);
   cacheGetJSON.mockResolvedValue({ meta: { language: 'TypeScript' } });
   vi.spyOn(console, 'warn').mockImplementation(() => {});
 });
 
 describe('recordEvent dual-write (FR-7.3)', () => {
-  it('sends the event to Flagsmith for the cookie identity and flushes before resolving', async () => {
+  it('sends the event to Flagsmith for the cookie identity and reports it for the after() flush', async () => {
     redis.sadd.mockResolvedValue(1);
-    let flushed = false;
-    flushFlagsmith.mockImplementation(async () => {
-      await new Promise((r) => setTimeout(r, 5));
-      flushed = true;
-    });
-    await recordEvent(VID, body);
+    const result = await recordEvent(VID, body);
     expect(trackFlagsmithEvent).toHaveBeenCalledWith(VID, 'clone_command_copied');
-    expect(flushed).toBe(true);
+    expect(result.flagsmith).toBe(true);
   });
 
   it('increments repo, global and language counters on the first occurrence', async () => {
@@ -65,7 +57,6 @@ describe('recordEvent dual-write (FR-7.3)', () => {
     const result = await recordEvent(VID, body);
     expect(hincrby).not.toHaveBeenCalled();
     expect(trackFlagsmithEvent).toHaveBeenCalledOnce();
-    expect(flushFlagsmith).toHaveBeenCalledOnce();
     expect(result.redisFirst).toBe(false);
   });
 
@@ -73,15 +64,13 @@ describe('recordEvent dual-write (FR-7.3)', () => {
     redis.sadd.mockRejectedValue(new Error('down'));
     const result = await recordEvent(VID, body);
     expect(trackFlagsmithEvent).toHaveBeenCalledOnce();
-    expect(flushFlagsmith).toHaveBeenCalledOnce();
     expect(result.redisFirst).toBeNull();
   });
 
-  it('skips the flush when Flagsmith is disabled', async () => {
+  it('reports flagsmith=false when Flagsmith is disabled, so no flush is scheduled', async () => {
     trackFlagsmithEvent.mockReturnValue(false);
     redis.sadd.mockResolvedValue(1);
-    await recordEvent(VID, body);
-    expect(flushFlagsmith).not.toHaveBeenCalled();
+    expect((await recordEvent(VID, body)).flagsmith).toBe(false);
   });
 });
 

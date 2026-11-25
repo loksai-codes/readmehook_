@@ -1,5 +1,4 @@
 import 'server-only';
-import { flushFlagsmith } from '@/lib/flagsmith/flush';
 import { trackFlagsmithEvent } from '@/lib/flagsmith/track';
 import type { RepoSnapshot } from '@/lib/github/types';
 import { cacheGetJSON, getRedis } from '@/lib/redis/client';
@@ -58,18 +57,15 @@ export async function recordRedisCounters(visitorId: string, body: TrackBody): P
 }
 
 /**
- * FR-7.3 dual-write. Every allow-listed event is sent to Flagsmith for the `rh_vid` identity (the
- * experiment's source of truth) and counted in Redis (deduplicated per visitor). Flagsmith is
- * flushed before returning, so the event is posted before Lambda can freeze (CLAUDE.md rule 5).
+ * FR-7.3 dual-write. Every allow-listed event is buffered for Flagsmith under the `rh_vid` identity
+ * (the experiment's source of truth) and counted in Redis (deduplicated per visitor). The caller
+ * flushes Flagsmith with `after(flushFlagsmith)` when `flagsmith` is true (CLAUDE.md rule 5).
  */
 export async function recordEvent(
   visitorId: string,
   body: TrackBody,
 ): Promise<{ flagsmith: boolean; redisFirst: boolean | null }> {
   const flagsmith = trackFlagsmithEvent(visitorId, body.event);
-  const [redisFirst] = await Promise.all([
-    recordRedisCounters(visitorId, body),
-    flagsmith ? flushFlagsmith() : Promise.resolve(),
-  ]);
+  const redisFirst = await recordRedisCounters(visitorId, body);
   return { flagsmith, redisFirst };
 }

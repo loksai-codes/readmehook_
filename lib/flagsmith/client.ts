@@ -6,9 +6,9 @@ import { serverEnv } from '@/lib/env';
  * FR-6.3: one `@flagsmith/nodejs` (>= 9.1) client per server instance, with events enabled so
  * `getExperimentFlag` records exposures and `trackEvent` sends conversions.
  *
- * AWS Amplify runs the app on Lambda, which can freeze the process as soon as a response is sent,
- * so the SDK's background flush timer is off (`flushInterval: 0`). Every route that records an
- * exposure or event awaits `flushFlagsmith()` before responding (see ./flush.ts).
+ * On Vercel a function instance can be suspended between requests, so the SDK's background flush
+ * timer is off (`flushInterval: 0`). Every request that records an exposure or event schedules
+ * `flushFlagsmith()` with Next's `after()`, which Vercel keeps alive via `waitUntil` (./flush.ts).
  *
  * Missing key → null: every visitor gets control and nothing is sent (CLAUDE.md rule 10).
  */

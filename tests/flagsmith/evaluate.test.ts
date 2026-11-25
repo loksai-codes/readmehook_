@@ -48,7 +48,7 @@ afterEach(() => {
 });
 
 describe('Flagsmith client', () => {
-  it('enables events and turns off the background flush timer (Lambda)', async () => {
+  it('enables events and turns off the background flush timer (serverless)', async () => {
     const { evaluateHeroLayout } = await load();
     getExperimentFlag.mockResolvedValue({ enabled: true, value: 'architecture_first' });
     await evaluateHeroLayout(VID, traits);
