@@ -1,0 +1,22 @@
+node_modules/
+.next/
+out/
+coverage/
+.vercel/
+.env
+.env*.local
+flagsmith.env
+*.log
+.DS_Store
+
+# env files: only .env.example is committed
+.env*
+!.env.example
+
+# next / typescript
+next-env.d.ts
+*.tsbuildinfo
+*.pem
+/build
+.pnp
+.pnp.*
