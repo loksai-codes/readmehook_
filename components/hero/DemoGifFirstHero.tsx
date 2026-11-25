@@ -16,7 +16,7 @@ export async function DemoGifFirstHero({ parsed, meta }: { parsed: ParsedReadme;
   const tooBig = isOverCap(bytes);
 
   const fallback = (
-    <div className="flex h-full items-center justify-center p-5">
+    <div className="flex items-center justify-center p-5 sm:p-6">
       {meta.homepage ? (
         <BrowserFrame homepage={meta.homepage} name={meta.repo} description={meta.description} />
       ) : (
@@ -34,7 +34,7 @@ export async function DemoGifFirstHero({ parsed, meta }: { parsed: ParsedReadme;
   return (
     <HeroFrame eyebrow="Demo" title={`See ${meta.repo} in action`} caption={caption}>
       {media && !tooBig ? (
-        <div className="flex h-full items-center justify-center bg-black/40 p-4">
+        <div className="flex items-center justify-center bg-black/40 p-4 sm:p-6">
           <DemoMedia url={media.url} kind={media.kind} alt={`${meta.repo} demo`} fallback={fallback} />
         </div>
       ) : (

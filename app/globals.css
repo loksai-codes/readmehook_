@@ -28,6 +28,17 @@ body {
   font-size: 0.8125rem;
   line-height: 1.6;
 }
+/* Long commands wrap instead of scrolling sideways */
+.rh-code-wrap pre {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  overflow-x: hidden;
+}
+/* Thin, quiet scrollbar for wide diagrams */
+.rh-scroll-x {
+  scrollbar-width: thin;
+  scrollbar-color: #3f3f46 transparent;
+}
 .rh-code-lg pre {
   font-size: 0.9375rem;
   line-height: 1.75;

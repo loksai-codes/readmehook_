@@ -6,9 +6,10 @@ import { MermaidDiagram } from './MermaidDiagram';
 /** Control arm: architecture diagram above the fold (README mermaid, else synthesized flowchart). */
 export function ArchitectureFirstHero({ parsed }: { parsed: ParsedReadme }) {
   const { diagram, section } = parsed.architecture;
+  // Shown whenever the diagram can't render (or renders empty): the Mermaid source, never a blank box.
   const fallback = (
-    <div className="h-full overflow-auto">
-      <CodeBlock code={diagram.code} lang="mermaid" />
+    <div className="max-h-[28rem] overflow-auto rounded-xl border border-white/[0.06] bg-zinc-900/60">
+      <CodeBlock code={diagram.code} lang="mermaid" className="rh-code-wrap" />
     </div>
   );
 
@@ -25,16 +26,16 @@ export function ArchitectureFirstHero({ parsed }: { parsed: ParsedReadme }) {
       }
     >
       {section && diagram.source === 'synthesized' ? (
-        <div className="grid h-full grid-rows-[minmax(0,1fr)_auto] md:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] md:grid-rows-1">
-          <div className="min-h-0 p-5">
+        <div className="grid md:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
+          <div className="p-5 sm:p-6">
             <MermaidDiagram code={diagram.code} fallback={fallback} />
           </div>
-          <div className="max-h-32 overflow-hidden border-t border-zinc-800/80 p-5 md:max-h-none md:border-t-0 md:border-l">
-            <p className="line-clamp-[12] text-sm leading-relaxed whitespace-pre-line text-zinc-400">{section.text}</p>
+          <div className="border-t border-white/[0.06] p-5 sm:p-6 md:border-t-0 md:border-l">
+            <p className="line-clamp-[10] text-sm leading-relaxed whitespace-pre-line text-zinc-400">{section.text}</p>
           </div>
         </div>
       ) : (
-        <div className="h-full p-5">
+        <div className="p-5 sm:p-6">
           <MermaidDiagram code={diagram.code} fallback={fallback} />
         </div>
       )}

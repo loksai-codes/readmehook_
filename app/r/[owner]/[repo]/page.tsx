@@ -110,12 +110,20 @@ async function RepoCard({ params, searchParams }: Pick<Props, 'params' | 'search
 
 function CardSkeleton() {
   return (
-    <div className="mx-auto w-full max-w-4xl animate-pulse px-5 pt-8 sm:px-6 sm:pt-12" aria-busy="true" aria-label="Loading repo">
-      <div className="h-4 w-32 rounded bg-zinc-800" />
-      <div className="mt-3 h-9 w-64 rounded bg-zinc-800" />
-      <div className="mt-3 h-5 w-full max-w-xl rounded bg-zinc-900" />
-      <div className="mt-6 h-12 rounded-lg bg-zinc-900" />
-      <div className="mt-6 h-[24rem] rounded-xl bg-zinc-900 sm:h-[26rem]" />
+    <div className="mx-auto w-full max-w-4xl animate-pulse px-4 pt-6 sm:px-6 sm:pt-12" aria-busy="true" aria-label="Loading repo">
+      <div className="rounded-2xl border border-white/10 bg-zinc-900/70">
+        <div className="px-5 pt-6 pb-6 sm:px-8 sm:pt-8">
+          <div className="h-5 w-32 rounded bg-zinc-800" />
+          <div className="mt-4 h-10 w-56 rounded bg-zinc-800" />
+          <div className="mt-4 h-6 w-full max-w-xl rounded bg-zinc-800/70" />
+          <div className="mt-5 h-4 w-48 rounded bg-zinc-800/70" />
+        </div>
+        <div className="grid gap-3 border-t border-white/[0.06] p-4 sm:grid-cols-[minmax(0,1fr)_12rem] sm:p-6">
+          <div className="h-20 rounded-xl bg-zinc-950" />
+          <div className="h-12 rounded-xl bg-zinc-800 sm:h-20" />
+        </div>
+      </div>
+      <div className="mt-6 h-64 rounded-2xl border border-white/[0.08] bg-zinc-950/80 sm:mt-8" />
     </div>
   );
 }

@@ -9,7 +9,7 @@ export function BrowserFrame({ homepage, name, description }: { homepage: string
     /* keep raw */
   }
   return (
-    <div className="flex h-full w-full max-w-2xl flex-col overflow-hidden rounded-lg border border-zinc-800 bg-zinc-900">
+    <div className="flex min-h-72 w-full max-w-2xl flex-col overflow-hidden rounded-xl border border-white/[0.08] bg-zinc-900">
       <div className="flex items-center gap-3 border-b border-zinc-800 px-3 py-2">
         <div className="flex gap-1.5" aria-hidden="true">
           <span className="h-2.5 w-2.5 rounded-full bg-zinc-700" />
@@ -49,7 +49,7 @@ export function TerminalMockup({ command, repo }: { command: string; repo: strin
   const last = lines.length - 1;
   const cursorDelay = last >= 0 ? delays[last]! + lines[last]!.n * 35 + 500 : 300;
   return (
-    <div className="h-full w-full max-w-2xl overflow-hidden rounded-lg border border-zinc-800 bg-[#0d1117] font-mono text-[13px]">
+    <div className="min-h-56 w-full max-w-2xl overflow-hidden rounded-xl border border-white/[0.08] bg-[#0d1117] font-mono text-[13px]">
       <div className="flex items-center gap-1.5 border-b border-zinc-800 px-3 py-2" aria-hidden="true">
         <span className="h-2.5 w-2.5 rounded-full bg-zinc-700" />
         <span className="h-2.5 w-2.5 rounded-full bg-zinc-700" />

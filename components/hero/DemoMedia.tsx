@@ -21,7 +21,7 @@ export function DemoMedia({
 }) {
   const [attempt, setAttempt] = useState<'video' | 'image' | 'failed'>(kind === 'gif' ? 'image' : 'video');
 
-  const mediaClass = 'max-h-full max-w-full rounded-md object-contain';
+  const mediaClass = 'max-h-[28rem] max-w-full rounded-lg object-contain';
 
   if (attempt === 'failed') return <>{fallback}</>;
 
