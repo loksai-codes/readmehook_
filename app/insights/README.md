@@ -1,2 +1,3 @@
-# /insights — public dashboard (Phase 2)
-Per-variant views / intent / bounce, language breakdown, n counters, guardrail chips, link to Flagsmith results, ADMIN_TOKEN drawer. See FR-10.
+# /insights — public experiment dashboard (FR-10)
+Live Redis counters (unique visitors per metric, under the running TELEMETRY_PREFIX: none in production) per variant: n, intent rate, bounce rate, guardrail chip (Baseline / OK / Watch / Breach, lib/advice/verdict.ts), inline SVG bars, language breakdown from `exp:langs`. The Flagsmith results page is linked as the source of truth.
+Admin drawer: `/insights?admin=<ADMIN_TOKEN>` → proxy.ts sets an httpOnly hashed `rh_admin` cookie and redirects; the drawer explains the `visual_heavy_repos` segment override (has_demo_video == true → demo_gif_first), which is made in Flagsmith, not via our API.

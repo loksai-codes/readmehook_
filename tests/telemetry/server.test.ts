@@ -6,12 +6,13 @@ const trackFlagsmithEvent = vi.fn();
 vi.mock('@/lib/flagsmith/track', () => ({ trackFlagsmithEvent: (...a: unknown[]) => trackFlagsmithEvent(...a) }));
 
 const hincrby = vi.fn();
+const pipeSadd = vi.fn();
 const exec = vi.fn();
 const redis = {
   sadd: vi.fn(),
   incr: vi.fn(),
   expire: vi.fn(),
-  pipeline: () => ({ hincrby, exec }),
+  pipeline: () => ({ hincrby, sadd: pipeSadd, exec }),
 };
 const getRedis = vi.fn<() => typeof redis | null>(() => redis);
 const cacheGetJSON = vi.fn();
@@ -48,6 +49,7 @@ describe('recordEvent dual-write (FR-7.3)', () => {
     expect(hincrby).toHaveBeenCalledWith('repo:acme/widget:variant:quickstart_first', 'clones', 1);
     expect(hincrby).toHaveBeenCalledWith('exp:variant:quickstart_first', 'clones', 1);
     expect(hincrby).toHaveBeenCalledWith('exp:lang:typescript:variant:quickstart_first', 'clones', 1);
+    expect(pipeSadd).toHaveBeenCalledWith('exp:langs', 'TypeScript');
     expect(exec).toHaveBeenCalledOnce();
     expect(result).toEqual({ flagsmith: true, redisFirst: true });
   });

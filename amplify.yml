@@ -12,7 +12,7 @@ frontend:
         # Amplify SSR compute only sees server env vars that are written into .env.production at build
         # time. Values come from the Amplify console (App settings → Environment variables); they are
         # never committed. TELEMETRY_PREFIX is intentionally not set in Production (no prefix).
-        - env | grep -E '^(FLAGSMITH_SERVER_KEY|FLAGSMITH_API_URL|FLAGSMITH_EVENTS_API_URL|FLAGSMITH_ENV_NAME|GITHUB_TOKEN|UPSTASH_REDIS_REST_URL|UPSTASH_REDIS_REST_TOKEN|ADMIN_TOKEN|TELEMETRY_PREFIX|NEXT_PUBLIC_SITE_URL)=' >> .env.production || true
+        - env | grep -E '^(FLAGSMITH_SERVER_KEY|FLAGSMITH_API_URL|FLAGSMITH_EVENTS_API_URL|FLAGSMITH_ENV_NAME|GITHUB_TOKEN|UPSTASH_REDIS_REST_URL|UPSTASH_REDIS_REST_TOKEN|ADMIN_TOKEN|FLAGSMITH_EXPERIMENT_URL|TELEMETRY_PREFIX|NEXT_PUBLIC_SITE_URL)=' >> .env.production || true
         - pnpm run lint
         - pnpm run typecheck
         - pnpm run test

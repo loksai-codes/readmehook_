@@ -35,6 +35,9 @@ export const keys = {
   expLangVariant: (lang: string, variant: string) =>
     `${prefix()}exp:lang:${lang.toLowerCase()}:variant:${variant}`,
 
+  /** Set of language names (GitHub casing) that have per-language counters, for /insights. */
+  expLangs: () => `${prefix()}exp:langs`,
+
   /** Per-visitor rate-limit counter, 60 s window. */
   rateLimit: (visitorId: string) => `${prefix()}rl:${visitorId}`,
 } as const;

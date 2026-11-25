@@ -21,6 +21,7 @@ describe('redis keys', () => {
       'sim:exp:lang:typescript:variant:architecture_first',
     );
     expect(keys.rateLimit('abc')).toBe('sim:rl:abc');
+    expect(keys.expLangs()).toBe('sim:exp:langs');
   });
 
   it('uses no prefix by default', () => {

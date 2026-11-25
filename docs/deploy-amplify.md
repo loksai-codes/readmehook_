@@ -24,7 +24,8 @@ Set these on the **production branch**. They are copied into `.env.production` d
 | `UPSTASH_REDIS_REST_URL` | Upstash REST URL | same DB as dev; dev writes under `dev:` |
 | `UPSTASH_REDIS_REST_TOKEN` | Upstash REST token | |
 | `NEXT_PUBLIC_SITE_URL` | `https://<branch>.<appId>.amplifyapp.com` or your custom domain, no trailing slash | used for `og:image` and share links; inlined at build, so **redeploy after changing it** |
-| `ADMIN_TOKEN` | any long random string | gates the Phase 2 `/insights` drawer |
+| `ADMIN_TOKEN` | any long random string | gates the `/insights` admin drawer: open `/insights?admin=<token>` once; it becomes an httpOnly cookie |
+| `FLAGSMITH_EXPERIMENT_URL` | optional | results link on `/insights` and `/stats`; defaults to Production experiment 485 |
 | `TELEMETRY_PREFIX` | **leave unset** | Production counters have no prefix |
 | `FLAGSMITH_API_URL`, `FLAGSMITH_EVENTS_API_URL` | leave unset | only for self-hosted Flagsmith |
 

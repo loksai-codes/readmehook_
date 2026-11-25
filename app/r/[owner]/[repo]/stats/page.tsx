@@ -4,13 +4,18 @@ import { connection } from 'next/server';
 import { Suspense } from 'react';
 import { CodeBlock } from '@/components/ui/CodeBlock';
 import { CopyButton } from '@/components/ui/CopyButton';
+import { ArmTable } from '@/components/insights/ExperimentViews';
+import { VerdictPanel } from '@/components/insights/VerdictPanel';
 import { Notice } from '@/components/ui/Notice';
 import { audit, type AuditCheck } from '@/lib/advice/audit';
 import { exportHeroMarkdown } from '@/lib/advice/export';
 import { cardPath, cardUrl } from '@/lib/advice/share';
+import { armStats, STAGE2_MIN_VIEWS, verdict } from '@/lib/advice/verdict';
+import { flagsmithExperimentUrl } from '@/lib/flagsmith/links';
 import { loadRepoForPage } from '@/lib/github/load';
 import { parseReadme } from '@/lib/parser';
 import { siteUrl } from '@/lib/site';
+import { readRepoCounters } from '@/lib/telemetry/counters';
 
 type Props = PageProps<'/r/[owner]/[repo]/stats'>;
 
@@ -44,6 +49,7 @@ async function Stats({ params }: Pick<Props, 'params'>) {
   const checks = audit(parsed, meta);
   const markdown = exportHeroMarkdown(meta, parsed, cardUrl(siteUrl(), meta.owner, meta.repo));
   const failing = checks.filter((c) => !c.passed).length;
+  const counters = await readRepoCounters(meta.fullName);
 
   return (
     <>
@@ -61,6 +67,8 @@ async function Stats({ params }: Pick<Props, 'params'>) {
             : `${failing} of 3 first-screen checks need work. Each one comes with Markdown you can paste`}
         </p>
       </header>
+
+      <Stage2 counters={counters} />
 
       <ol className="mt-8 space-y-4" aria-label="Audit checks">
         {checks.map((check) => (
@@ -83,6 +91,29 @@ async function Stats({ params }: Pick<Props, 'params'>) {
         </div>
       </section>
     </>
+  );
+}
+
+/** FR-8.3 Stage 2: live per-variant results for this repo once it has enough views. */
+function Stage2({ counters }: { counters: Awaited<ReturnType<typeof readRepoCounters>> }) {
+  if (!counters) return null;
+  const arms = armStats(counters);
+  const v = verdict(arms);
+  if (v.totalViews < STAGE2_MIN_VIEWS) {
+    return (
+      <p className="mt-6 text-sm text-zinc-500">
+        Live A/B results for this card appear after {STAGE2_MIN_VIEWS} visitors ({v.totalViews} so far)
+      </p>
+    );
+  }
+  return (
+    <section aria-labelledby="stage2-title" className="mt-8 space-y-4">
+      <h2 id="stage2-title" className="text-lg font-medium text-zinc-100">
+        Live results for this card
+      </h2>
+      <VerdictPanel verdict={v} resultsUrl={flagsmithExperimentUrl()} />
+      <ArmTable arms={arms} caption="Visitors, developer intent and bounce rate per variant for this repo" />
+    </section>
   );
 }
 

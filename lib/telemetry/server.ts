@@ -47,7 +47,10 @@ export async function recordRedisCounters(visitorId: string, body: TrackBody): P
     const pipe = redis.pipeline();
     pipe.hincrby(keys.repoVariant(body.repoSlug, body.variant), field, 1);
     pipe.hincrby(keys.expVariant(body.variant), field, 1);
-    if (language) pipe.hincrby(keys.expLangVariant(language, body.variant), field, 1);
+    if (language) {
+      pipe.hincrby(keys.expLangVariant(language, body.variant), field, 1);
+      pipe.sadd(keys.expLangs(), language);
+    }
     await pipe.exec();
     return true;
   } catch (err) {
