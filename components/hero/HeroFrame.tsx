@@ -21,8 +21,8 @@ export function HeroFrame({
     <div className="flex h-[24rem] flex-col overflow-hidden rounded-xl border border-zinc-800 bg-zinc-950 sm:h-[26rem]">
       <div className="flex items-center justify-between gap-4 border-b border-zinc-800/80 px-5 py-3">
         <div className="min-w-0">
-          <p className="font-mono text-[11px] tracking-widest text-emerald-400 uppercase">{eyebrow}</p>
-          <h2 className="truncate text-sm font-semibold text-zinc-100">{title}</h2>
+          <p className="font-mono text-xs text-zinc-500">{eyebrow}</p>
+          <h2 className="truncate text-sm font-medium text-zinc-100">{title}</h2>
         </div>
         {actions}
       </div>

@@ -37,8 +37,8 @@ function MermaidRenderer({ code, fallback }: { code: string; fallback: ReactNode
             primaryColor: '#18181b',
             primaryTextColor: '#e4e4e7',
             primaryBorderColor: '#52525b',
-            secondaryColor: '#14231d',
-            secondaryBorderColor: '#34d399',
+            secondaryColor: '#1c1c1f',
+            secondaryBorderColor: '#71717a',
             tertiaryColor: '#111113',
             lineColor: '#71717a',
             textColor: '#d4d4d8',
@@ -78,7 +78,7 @@ function MermaidRenderer({ code, fallback }: { code: string; fallback: ReactNode
   }
   return (
     <div className="flex h-full w-full items-center justify-center" aria-busy="true">
-      <span className="animate-pulse font-mono text-xs text-zinc-500">rendering diagram…</span>
+      <span className="font-mono text-xs text-zinc-500">rendering diagram…</span>
     </div>
   );
 }
