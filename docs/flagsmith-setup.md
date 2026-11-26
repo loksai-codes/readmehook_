@@ -80,7 +80,7 @@ No keys here: server keys live in `.env.local` (Development) and the Vercel proj
 
 Allocation in both: rollout 100%, `quickstart_first` 50%, `demo_gif_first` 0%, control the remaining 50%. The bounce metric's expected direction is `not_increase` (guardrail).
 
-Status checked 2026-11-26 with `flagsmith api api/v1/environments/<env key>/experiments/<id>/`: both `status: running`, `ended_at: null`. Production's warehouse connection reported `total_events_received: 0` at that time (Development: 135), so the Production results page had no exposures yet.
+Status checked 2026-11-26 with `flagsmith api api/v1/environments/<env key>/experiments/<id>/`: both `status: running`, `ended_at: null`. Production's warehouse connection reported `total_events_received: 0` at that time (Development: 135), so the Production results page had no exposures yet. Cause: the Production `FLAGSMITH_SERVER_KEY` on Vercel was invalid, so every evaluation fell back to control. After it was re-entered on 2026-11-26, the first Production identity appeared at 04:29 UTC and the deploy logs `[flagsmith] client ready: env=production key=ser.…xXAu`.
 
 Production was started with:
 
