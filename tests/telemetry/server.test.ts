@@ -76,6 +76,41 @@ describe('recordEvent dual-write (FR-7.3)', () => {
   });
 });
 
+describe('source counters (confound check)', () => {
+  it('sends only the event name to Flagsmith, never the source', async () => {
+    redis.sadd.mockResolvedValue(1);
+    await recordEvent(VID, { ...body, source: 'quickstart_copy' });
+    expect(trackFlagsmithEvent).toHaveBeenCalledTimes(1);
+    expect(trackFlagsmithEvent).toHaveBeenCalledWith(VID, 'clone_command_copied');
+  });
+
+  it('counts the source in its own deduplicated set, on the repo and global hashes', async () => {
+    redis.sadd.mockResolvedValue(1);
+    await recordEvent(VID, { ...body, source: 'clone_box' });
+    expect(redis.sadd).toHaveBeenCalledWith('repo:acme/widget:variant:quickstart_first:uniq:src_clone_box', VID);
+    expect(hincrby).toHaveBeenCalledWith('repo:acme/widget:variant:quickstart_first', 'src_clone_box', 1);
+    expect(hincrby).toHaveBeenCalledWith('exp:variant:quickstart_first', 'src_clone_box', 1);
+  });
+
+  it('counts a source even when the metric itself was already counted for the visitor', async () => {
+    redis.sadd.mockImplementation(async (key: string) => (key.endsWith(':uniq:clones') ? 0 : 1));
+    await recordEvent(VID, { ...body, source: 'clone_box' });
+    expect(hincrby).toHaveBeenCalledWith('exp:variant:quickstart_first', 'src_clone_box', 1);
+    expect(hincrby).not.toHaveBeenCalledWith('exp:variant:quickstart_first', 'clones', 1);
+  });
+
+  it('feeds src_views from card_view, and adds nothing for events without a source', async () => {
+    redis.sadd.mockResolvedValue(1);
+    await recordEvent(VID, { ...body, event: 'card_view' });
+    expect(hincrby).toHaveBeenCalledWith('exp:variant:quickstart_first', 'src_views', 1);
+    vi.clearAllMocks();
+    redis.sadd.mockResolvedValue(1);
+    await recordEvent(VID, { ...body, event: 'developer_intent' });
+    expect(redis.sadd).toHaveBeenCalledTimes(1);
+    expect(redis.sadd).toHaveBeenCalledWith('repo:acme/widget:variant:quickstart_first:uniq:intent', VID);
+  });
+});
+
 describe('isRateLimited (FR-7.6)', () => {
   it('allows 60 per minute and sets the window on the first hit', async () => {
     redis.incr.mockResolvedValue(1);

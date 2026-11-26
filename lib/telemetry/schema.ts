@@ -2,7 +2,7 @@
 import { z } from 'zod';
 import { HERO_LAYOUTS } from '@/lib/flagsmith/variants';
 import { isValidSlug } from '@/lib/github/slug';
-import { isEventName, type EventName } from './events';
+import { CONVERSION_SOURCES, isEventName, SOURCE_EVENT, type EventName } from './events';
 
 /** Bodies above this are rejected before parsing. */
 export const MAX_TRACK_BODY_BYTES = 1024;
@@ -18,8 +18,11 @@ export const trackBodySchema = z
         return parts.length === 2 && isValidSlug(parts[0]!, parts[1]!);
       }, 'invalid repo slug'),
     variant: z.enum(HERO_LAYOUTS),
+    /** Optional: which control fired a conversion (Redis confound check only). */
+    source: z.enum(CONVERSION_SOURCES).optional(),
   })
-  .strict();
+  .strict()
+  .refine((b) => b.source === undefined || SOURCE_EVENT[b.source] === b.event, 'source does not match event');
 
 export type TrackBody = z.infer<typeof trackBodySchema>;
 

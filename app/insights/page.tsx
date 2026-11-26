@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { cookies } from 'next/headers';
 import { connection } from 'next/server';
 import { Suspense } from 'react';
-import { ArmTable, bounceBars, intentBars, RateBars } from '@/components/insights/ExperimentViews';
+import { ArmTable, bounceBars, intentBars, RateBars, SourceTable } from '@/components/insights/ExperimentViews';
 import { SegmentDrawer } from '@/components/insights/SegmentDrawer';
 import { VerdictPanel } from '@/components/insights/VerdictPanel';
 import { armStats, formatRate, verdict } from '@/lib/advice/verdict';
@@ -111,6 +111,21 @@ async function Dashboard({ resultsUrl }: { resultsUrl: string }) {
         <div className="grid gap-4 md:grid-cols-2">
           <RateBars title="Developer intent rate" rows={intentBars(arms)} />
           <RateBars title="Bounce under 5 s (guardrail)" rows={bounceBars(arms)} />
+        </div>
+      </section>
+
+      <section aria-labelledby="sources" className="mt-12">
+        <h2 id="sources" className="text-lg font-medium text-zinc-100">
+          Confound check: which button converted
+        </h2>
+        <p className="mt-1 max-w-3xl text-sm text-zinc-400">
+          quickstart_first has an extra copy button that the control doesn&apos;t, and copying its command (for example{' '}
+          <code className="font-mono text-zinc-300">pnpm install</code>) counts as a clone copy in Flagsmith. The clone
+          box and GitHub button are identical in both arms, so their rates are the layout-only comparison. Unique
+          visitors, counted since source tracking started, so n here is smaller than above
+        </p>
+        <div className="mt-4">
+          <SourceTable rows={arms.map((a) => ({ variant: a.variant, counts: counters.sources[a.variant] }))} />
         </div>
       </section>
 

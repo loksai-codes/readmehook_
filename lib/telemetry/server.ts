@@ -3,7 +3,7 @@ import { trackFlagsmithEvent } from '@/lib/flagsmith/track';
 import type { RepoSnapshot } from '@/lib/github/types';
 import { cacheGetJSON, getRedis } from '@/lib/redis/client';
 import { keys, TTL } from '@/lib/redis/keys';
-import { COUNTER_FIELD, TRACK_RATE_LIMIT_PER_MIN } from './events';
+import { COUNTER_FIELD, EVENTS, SOURCE_VIEWS_FIELD, sourceField, TRACK_RATE_LIMIT_PER_MIN } from './events';
 import type { TrackBody } from './schema';
 
 /**
@@ -60,6 +60,32 @@ export async function recordRedisCounters(visitorId: string, body: TrackBody): P
 }
 
 /**
+ * Confound check: per-source unique visitors, deduplicated separately from the metric sets so a
+ * visitor who copies from the quickstart hero first and the clone box later counts for both.
+ * `card_view` also feeds `src_views`, a denominator that starts when source tracking shipped.
+ * Repo + global hashes only. Redis-only; nothing here reaches Flagsmith. Never throws.
+ */
+export async function recordSourceCounters(visitorId: string, body: TrackBody): Promise<boolean | null> {
+  const field =
+    body.event === EVENTS.CARD_VIEW ? SOURCE_VIEWS_FIELD : body.source ? sourceField(body.source) : null;
+  if (!field) return false;
+  const redis = getRedis();
+  if (!redis) return null;
+  try {
+    const added = await redis.sadd(keys.repoVariantUniq(body.repoSlug, body.variant, field), visitorId);
+    if (added !== 1) return false;
+    const pipe = redis.pipeline();
+    pipe.hincrby(keys.repoVariant(body.repoSlug, body.variant), field, 1);
+    pipe.hincrby(keys.expVariant(body.variant), field, 1);
+    await pipe.exec();
+    return true;
+  } catch (err) {
+    console.warn(`[track] source counters for ${body.event} failed`, err);
+    return null;
+  }
+}
+
+/**
  * FR-7.3 dual-write. Every allow-listed event is buffered for Flagsmith under the `rh_vid` identity
  * (the experiment's source of truth) and counted in Redis (deduplicated per visitor). The caller
  * flushes Flagsmith with `after(flushFlagsmith)` when `flagsmith` is true (CLAUDE.md rule 5).
@@ -68,7 +94,11 @@ export async function recordEvent(
   visitorId: string,
   body: TrackBody,
 ): Promise<{ flagsmith: boolean; redisFirst: boolean | null }> {
+  // Flagsmith gets the event name only; `source` never leaves Redis.
   const flagsmith = trackFlagsmithEvent(visitorId, body.event);
-  const redisFirst = await recordRedisCounters(visitorId, body);
+  const [redisFirst] = await Promise.all([
+    recordRedisCounters(visitorId, body),
+    recordSourceCounters(visitorId, body),
+  ]);
   return { flagsmith, redisFirst };
 }
