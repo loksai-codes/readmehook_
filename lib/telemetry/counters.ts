@@ -3,6 +3,7 @@ import { toCounters, type ArmCounters } from '@/lib/advice/verdict';
 import { HERO_LAYOUTS, type HeroLayout } from '@/lib/flagsmith/variants';
 import { getRedis } from '@/lib/redis/client';
 import { keys } from '@/lib/redis/keys';
+import { toAssignmentCounts, type AssignmentCounts } from './assignment';
 import { toSourceCounts, type SourceCounts } from './sources';
 
 export type ArmCounterMap = Record<HeroLayout, ArmCounters>;
@@ -18,6 +19,8 @@ export interface InsightsCounters {
   global: ArmCounterMap;
   /** Confound check: per-source unique visitors per arm, from the same global hashes. */
   sources: Record<HeroLayout, SourceCounts>;
+  /** Per arm: visitors whose variant came from Flagsmith vs a control fallback. */
+  assignments: Record<HeroLayout, AssignmentCounts>;
   languages: LanguageRow[];
   /** False when Redis is missing or failed; the page then says so instead of showing zeros. */
   available: boolean;
@@ -58,7 +61,18 @@ export async function readInsightsCounters(): Promise<InsightsCounters> {
     HeroLayout,
     SourceCounts
   >;
-  const unavailable = { prefix, global: empty, sources: noSources, languages: [], available: false };
+  const noAssignments = Object.fromEntries(HERO_LAYOUTS.map((v) => [v, toAssignmentCounts(null)])) as Record<
+    HeroLayout,
+    AssignmentCounts
+  >;
+  const unavailable = {
+    prefix,
+    global: empty,
+    sources: noSources,
+    assignments: noAssignments,
+    languages: [],
+    available: false,
+  };
   const redis = getRedis();
   if (!redis) return unavailable;
   try {
@@ -68,6 +82,7 @@ export async function readInsightsCounters(): Promise<InsightsCounters> {
     ]);
     const global = globalRows ? perArm(globalRows, toCounters) : null;
     const sources = globalRows ? perArm(globalRows, toSourceCounts) : noSources;
+    const assignments = globalRows ? perArm(globalRows, toAssignmentCounts) : noAssignments;
     const names = [...new Set((languageNames ?? []).map(String))].sort((a, b) => a.localeCompare(b));
     const languages = await Promise.all(
       names.map(async (language) => ({
@@ -75,7 +90,7 @@ export async function readInsightsCounters(): Promise<InsightsCounters> {
         arms: (await readArms((v) => keys.expLangVariant(language, v))) ?? empty,
       })),
     );
-    return { prefix, global: global ?? empty, sources, languages, available: true };
+    return { prefix, global: global ?? empty, sources, assignments, languages, available: true };
   } catch (err) {
     console.warn('[counters] insights read failed', err);
     return unavailable;

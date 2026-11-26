@@ -21,7 +21,7 @@ vi.mock('@/lib/redis/client', () => ({
   cacheGetJSON: (...a: unknown[]) => cacheGetJSON(...a),
 }));
 
-const { recordEvent, isRateLimited } = await import('@/lib/telemetry/server');
+const { recordEvent, isRateLimited, recordAssignment } = await import('@/lib/telemetry/server');
 
 const VID = '3b241101-e2bb-4255-8caf-4136c566a962';
 const body = { event: 'clone_command_copied', repoSlug: 'Acme/Widget', variant: 'quickstart_first' } as const;
@@ -108,6 +108,30 @@ describe('source counters (confound check)', () => {
     await recordEvent(VID, { ...body, event: 'developer_intent' });
     expect(redis.sadd).toHaveBeenCalledTimes(1);
     expect(redis.sadd).toHaveBeenCalledWith('repo:acme/widget:variant:quickstart_first:uniq:intent', VID);
+  });
+});
+
+describe('recordAssignment (Flagsmith vs fallback)', () => {
+  it('counts a fallback and its reason once per visitor, on the repo and global hashes', async () => {
+    redis.sadd.mockResolvedValue(1);
+    await recordAssignment(VID, 'Acme/Widget', {
+      variant: 'architecture_first',
+      source: 'fallback',
+      reason: 'request_failed',
+    });
+    expect(redis.sadd).toHaveBeenCalledWith('repo:acme/widget:variant:architecture_first:uniq:assign_fallback', VID);
+    expect(hincrby).toHaveBeenCalledWith('exp:variant:architecture_first', 'assign_fallback', 1);
+    expect(hincrby).toHaveBeenCalledWith('repo:acme/widget:variant:architecture_first', 'fallback_request_failed', 1);
+    expect(trackFlagsmithEvent).not.toHaveBeenCalled();
+  });
+
+  it('skips fields already counted for the visitor and never throws', async () => {
+    const exposed = { variant: 'quickstart_first', source: 'flagsmith', exposed: true } as const;
+    redis.sadd.mockResolvedValue(0);
+    await recordAssignment(VID, 'Acme/Widget', exposed);
+    expect(hincrby).not.toHaveBeenCalled();
+    redis.sadd.mockRejectedValue(new Error('down'));
+    await expect(recordAssignment(VID, 'Acme/Widget', exposed)).resolves.toBeUndefined();
   });
 });
 

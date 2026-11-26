@@ -1,5 +1,6 @@
 import { formatRate, type ArmStats, type GuardrailStatus } from '@/lib/advice/verdict';
-import type { HeroLayout } from '@/lib/flagsmith/variants';
+import { FALLBACK_REASONS, type FallbackReason, type HeroLayout } from '@/lib/flagsmith/variants';
+import type { AssignmentCounts } from '@/lib/telemetry/assignment';
 import { CONVERSION_SOURCES, type ConversionSource } from '@/lib/telemetry/events';
 import { sourceRate, type SourceCounts } from '@/lib/telemetry/sources';
 
@@ -173,6 +174,55 @@ export function SourceTable({ rows }: { rows: { variant: HeroLayout; counts: Sou
           ))}
         </tbody>
       </table>
+    </div>
+  );
+}
+
+const REASON_LABEL: Record<FallbackReason, string> = {
+  no_client: 'no server key',
+  request_failed: 'request failed',
+  flag_missing: 'flag missing',
+  flag_disabled: 'flag disabled',
+  unknown_value: 'unknown value',
+};
+
+/**
+ * Where each arm's visitors got their variant: Flagsmith (with or without a recorded exposure) or a
+ * control fallback. Fallback visitors are in the live counters but Flagsmith never saw them.
+ */
+export function AssignmentSummary({ rows }: { rows: { variant: HeroLayout; counts: AssignmentCounts }[] }) {
+  const fallbacks = rows.reduce((s, r) => s + r.counts.fallback, 0);
+  const reasons = FALLBACK_REASONS.map((reason) => ({
+    reason,
+    n: rows.reduce((s, r) => s + r.counts.byReason[reason], 0),
+  })).filter((r) => r.n > 0);
+  const unexposed = rows.reduce((s, r) => s + (r.counts.flagsmith - r.counts.exposed), 0);
+
+  return (
+    <div className="space-y-3">
+      <ul className="grid gap-2 text-sm text-zinc-300 sm:grid-cols-2">
+        {rows.map(({ variant, counts }) => (
+          <li key={variant} className="font-mono tabular-nums">
+            <span className="text-zinc-100">{variant}</span>: Flagsmith {counts.flagsmith} (exposure recorded{' '}
+            {counts.exposed}) · fallback {counts.fallback}
+          </li>
+        ))}
+      </ul>
+      {fallbacks > 0 ? (
+        <p role="alert" className="flex gap-2 text-sm text-rose-300">
+          <span aria-hidden="true" className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-rose-400" />
+          {fallbacks} visitor{fallbacks === 1 ? '' : 's'} got control because Flagsmith gave no usable answer (
+          {reasons.map((r) => `${REASON_LABEL[r.reason]}: ${r.n}`).join(', ')}). They are in the counters on this
+          page, but Flagsmith never saw them
+        </p>
+      ) : null}
+      {unexposed > 0 ? (
+        <p className="flex gap-2 text-sm text-amber-200/90">
+          <span aria-hidden="true" className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-amber-400" />
+          {unexposed} visitor{unexposed === 1 ? '' : 's'} got a variant from Flagsmith but no exposure was recorded (not
+          enrolled in a running experiment in this environment)
+        </p>
+      ) : null}
     </div>
   );
 }

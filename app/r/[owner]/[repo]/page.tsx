@@ -10,6 +10,7 @@ import { Notice } from '@/components/ui/Notice';
 import { cardPath } from '@/lib/advice/share';
 import { evaluateHeroLayout } from '@/lib/flagsmith/evaluate';
 import { flushFlagsmith } from '@/lib/flagsmith/flush';
+import { recordAssignment } from '@/lib/telemetry/server';
 import { buildHeroTraits, isCreatorView, planVariant } from '@/lib/flagsmith/traits';
 import type { HeroLayout } from '@/lib/flagsmith/variants';
 import { loadRepoForPage } from '@/lib/github/load';
@@ -69,16 +70,19 @@ async function RepoCard({ params, searchParams }: Pick<Props, 'params' | 'search
   const creator = isCreatorView(query.created);
 
   // FR-6: identify + evaluate (records the exposure) only for real human page views. The exposure
-  // is flushed after the response via after() (Vercel waitUntil). Fails open to control.
+  // is flushed after the response via after() (Vercel waitUntil). Fails open to control, and Redis
+  // records whether the variant came from Flagsmith or a fallback (server-side, per visitor).
+  const { owner, repo, fullName: repoSlug } = snapshot.meta;
   const plan = planVariant(query.variant, visitor, { creator });
   let variant: HeroLayout;
   if (plan.source === 'flagsmith') {
-    variant = await evaluateHeroLayout(plan.visitorId, traits);
+    const assignment = await evaluateHeroLayout(plan.visitorId, traits);
+    variant = assignment.variant;
     after(flushFlagsmith);
+    after(() => recordAssignment(plan.visitorId, repoSlug, assignment));
   } else {
     variant = plan.variant;
   }
-  const { owner, repo, fullName: repoSlug } = snapshot.meta;
   // Only experiment views send telemetry; the creator's own view and bots never do.
   const tracked = plan.source === 'flagsmith' || plan.source === 'forced';
 

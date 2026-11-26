@@ -1,9 +1,11 @@
 import 'server-only';
 import { trackFlagsmithEvent } from '@/lib/flagsmith/track';
+import type { HeroAssignment } from '@/lib/flagsmith/variants';
 import type { RepoSnapshot } from '@/lib/github/types';
 import { cacheGetJSON, getRedis } from '@/lib/redis/client';
 import { keys, TTL } from '@/lib/redis/keys';
 import { COUNTER_FIELD, EVENTS, SOURCE_VIEWS_FIELD, sourceField, TRACK_RATE_LIMIT_PER_MIN } from './events';
+import { assignmentFields } from './assignment';
 import type { TrackBody } from './schema';
 
 /**
@@ -101,4 +103,26 @@ export async function recordEvent(
     recordSourceCounters(visitorId, body),
   ]);
   return { flagsmith, redisFirst };
+}
+
+/**
+ * Records where a card view's variant came from (Flagsmith or a control fallback, with the reason),
+ * server-side at render, so it can't be spoofed. Each field is deduplicated per visitor per repo and
+ * counted on the repo and global per-variant hashes. Schedule with `after()`. Never throws.
+ */
+export async function recordAssignment(visitorId: string, repoSlug: string, a: HeroAssignment): Promise<void> {
+  const redis = getRedis();
+  if (!redis) return;
+  try {
+    for (const field of assignmentFields(a)) {
+      const added = await redis.sadd(keys.repoVariantUniq(repoSlug, a.variant, field), visitorId);
+      if (added !== 1) continue;
+      const pipe = redis.pipeline();
+      pipe.hincrby(keys.repoVariant(repoSlug, a.variant), field, 1);
+      pipe.hincrby(keys.expVariant(a.variant), field, 1);
+      await pipe.exec();
+    }
+  } catch (err) {
+    console.warn(`[track] assignment counters for ${repoSlug} failed`, err);
+  }
 }

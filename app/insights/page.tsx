@@ -2,7 +2,14 @@ import type { Metadata } from 'next';
 import { cookies } from 'next/headers';
 import { connection } from 'next/server';
 import { Suspense } from 'react';
-import { ArmTable, bounceBars, intentBars, RateBars, SourceTable } from '@/components/insights/ExperimentViews';
+import {
+  ArmTable,
+  AssignmentSummary,
+  bounceBars,
+  intentBars,
+  RateBars,
+  SourceTable,
+} from '@/components/insights/ExperimentViews';
 import { SegmentDrawer } from '@/components/insights/SegmentDrawer';
 import { VerdictPanel } from '@/components/insights/VerdictPanel';
 import { armStats, formatRate, verdict } from '@/lib/advice/verdict';
@@ -92,6 +99,18 @@ async function Dashboard({ resultsUrl }: { resultsUrl: string }) {
             <dd className="mt-1 text-xs text-zinc-500">visitors</dd>
           </div>
         </dl>
+      </section>
+
+      <section aria-labelledby="assignment" className="mt-8 rounded-xl border border-zinc-800 p-5">
+        <h2 id="assignment" className="text-sm text-zinc-400">
+          Where the variant came from
+        </h2>
+        <p className="mt-1 text-xs text-zinc-500">
+          Recorded on the server for each visitor since this was added; earlier visits have no record
+        </p>
+        <div className="mt-3">
+          <AssignmentSummary rows={arms.map((a) => ({ variant: a.variant, counts: counters.assignments[a.variant] }))} />
+        </div>
       </section>
 
       <section aria-labelledby="verdict" className="mt-8 rounded-xl border border-zinc-800 p-5">
