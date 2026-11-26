@@ -113,13 +113,12 @@ export function RateBars({ title, rows }: { title: string; rows: BarRow[] }) {
 }
 
 /** Bars for one rate across arms: the leader on intent, or a breaching arm on bounce, gets the accent. */
-export function intentBars(arms: ArmStats[]): BarRow[] {
-  const best = Math.max(...arms.map((a) => a.intentRate ?? -1));
-  const unique = arms.filter((a) => a.intentRate === best).length === 1;
+/** Accents only the verdict's leader (named with Flagsmith's win probability), never the raw top rate. */
+export function intentBars(arms: ArmStats[], leader: HeroLayout | null): BarRow[] {
   return arms.map((a) => ({
     label: a.variant,
     value: a.intentRate,
-    accent: unique && a.intentRate === best && best > 0 ? 'lead' : undefined,
+    accent: leader !== null && a.variant === leader ? 'lead' : undefined,
   }));
 }
 

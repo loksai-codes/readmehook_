@@ -101,31 +101,49 @@ export function formatRate(r: number | null): string {
   return r === null ? '–' : `${Math.round(r * 1000) / 10}%`;
 }
 
+/**
+ * Flagsmith's win probability for the primary metric: the arm it reports as most likely best and
+ * that probability (0..1). Experiment-wide only; there is no per-repo win probability.
+ */
+export interface WinProbability {
+  variant: HeroLayout;
+  probability: number;
+}
+
+export function formatProbability(p: number): string {
+  return `${Math.round(Math.min(1, Math.max(0, p)) * 100)}%`;
+}
+
 export interface Verdict {
-  /** One sentence naming the leader on developer intent, or saying there is none yet. */
+  /**
+   * One sentence. Below LOW_SAMPLE_PER_ARM in any arm it never names a leader. At or above it, a
+   * leader is named only with Flagsmith's win probability, never from raw rates alone.
+   */
   headline: string;
+  /** The arm named as leader (only with 30+ per arm and a Flagsmith win probability), else null. */
+  leader: HeroLayout | null;
   /** Guardrail warnings, one per breaching arm. */
   guardrailWarnings: string[];
   lowSample: boolean;
   totalViews: number;
 }
 
-export function verdict(arms: ArmStats[]): Verdict {
+export function verdict(arms: ArmStats[], opts: { winProbability?: WinProbability | null } = {}): Verdict {
   const totalViews = arms.reduce((s, a) => s + a.n, 0);
-  const measured = arms.filter((a) => a.intentRate !== null);
   const lowSample = arms.some((a) => a.n < LOW_SAMPLE_PER_ARM);
 
   let headline: string;
-  if (measured.length < 2) {
-    headline = 'Not enough views in both arms to compare yet';
+  let named: HeroLayout | null = null;
+  const leader = opts.winProbability ? arms.find((a) => a.variant === opts.winProbability!.variant) : undefined;
+  if (lowSample) {
+    headline = `Collecting data: n = ${arms.map((a) => a.n).join(' vs ')}, too early to call`;
+  } else if (opts.winProbability && leader) {
+    const others = arms.filter((a) => a !== leader);
+    const rates = [leader, ...others].map((a) => `${formatRate(a.intentRate)} ${a.variant}`).join(' vs ');
+    named = leader.variant;
+    headline = `${leader.variant} leads on developer intent with a ${formatProbability(opts.winProbability.probability)} win probability in Flagsmith (intent ${rates})`;
   } else {
-    const sorted = [...measured].sort((a, b) => b.intentRate! - a.intentRate!);
-    const [first, second] = sorted as [ArmStats, ArmStats];
-    if (first.intentRate === second.intentRate) {
-      headline = `No difference in developer intent yet (${formatRate(first.intentRate)} in both arms)`;
-    } else {
-      headline = `${first.variant} leads on developer intent: ${formatRate(first.intentRate)} vs ${formatRate(second.intentRate)} for ${second.variant}`;
-    }
+    headline = `n = ${arms.map((a) => a.n).join(' vs ')}. No leader named without Flagsmith's win probability; raw numbers below`;
   }
 
   const control = arms.find((a) => a.variant === CONTROL);
@@ -136,5 +154,5 @@ export function verdict(arms: ArmStats[]): Verdict {
         `${a.variant} bounces faster than control: ${formatRate(a.bounceRate)} of visitors left within 5 s vs ${formatRate(control?.bounceRate ?? null)}`,
     );
 
-  return { headline, guardrailWarnings, lowSample, totalViews };
+  return { headline, leader: named, guardrailWarnings, lowSample, totalViews };
 }

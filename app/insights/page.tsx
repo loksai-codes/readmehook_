@@ -109,7 +109,7 @@ async function Dashboard({ resultsUrl }: { resultsUrl: string }) {
         </h2>
         <ArmTable arms={arms} caption="Visitors, developer intent and bounce rate per variant" />
         <div className="grid gap-4 md:grid-cols-2">
-          <RateBars title="Developer intent rate" rows={intentBars(arms)} />
+          <RateBars title="Developer intent rate" rows={intentBars(arms, v.leader)} />
           <RateBars title="Bounce under 5 s (guardrail)" rows={bounceBars(arms)} />
         </div>
       </section>
