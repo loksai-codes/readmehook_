@@ -1,6 +1,6 @@
 # Flagsmith setup — flag, metrics, experiment
 
-Two routes. **Route A** (fastest): let Claude Code run Flagsmith's official coding-agent setup prompt (Prompt 3 in `prompt.md` points at it). **Route B**: click through the dashboard yourself using the values below. Either way, the values must match exactly.
+Two routes. **Route A** (fastest): let a coding agent run Flagsmith's official coding-agent setup prompt (linked below). **Route B**: click through the dashboard yourself using the values below. Either way, the values must match exactly.
 
 Reference: https://docs.flagsmith.com/experimentation/set-up-with-a-coding-agent
 
@@ -76,11 +76,13 @@ No keys here: server keys live in `.env.local` (Development) and the Vercel proj
 | Flag `repo_hero_layout` | id 304390, control `architecture_first`, enabled | same |
 | Variations | `quickstart_first` (36852), `demo_gif_first` (36853) | same |
 | Metrics: intent / clone / outbound / bounce | 463 / 464 / 465 / 466 | 467 / 468 / 469 / 470 |
-| Experiment "Hero layout: quickstart vs architecture" | 484, **running** (verification) | 485, **created, not started** |
+| Experiment "Hero layout: quickstart vs architecture" | 484, **running** since 2026-11-25 17:00 UTC (verification) | 485, **running** since 2026-11-25 17:25 UTC |
 
 Allocation in both: rollout 100%, `quickstart_first` 50%, `demo_gif_first` 0%, control the remaining 50%. The bounce metric's expected direction is `not_increase` (guardrail).
 
-Start Production only after the Vercel deploy is verified (docs/deploy-vercel.md):
+Status checked 2026-11-26 with `flagsmith api api/v1/environments/<env key>/experiments/<id>/`: both `status: running`, `ended_at: null`. Production's warehouse connection reported `total_events_received: 0` at that time (Development: 135), so the Production results page had no exposures yet.
+
+Production was started with:
 
 ```bash
 flagsmith api -X POST api/v1/environments/iKpcbAp4Uc2tHEaYZuwCre/experiments/485/start/

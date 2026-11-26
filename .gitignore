@@ -20,3 +20,8 @@ next-env.d.ts
 /build
 .pnp
 .pnp.*
+
+# private working files (kept outside the repo; CLAUDE.md stays local for Claude Code)
+/prompt.md
+/PRD.md
+/CLAUDE.md

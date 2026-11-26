@@ -22,7 +22,7 @@ export function GitHubCta({
   className?: string;
   children: ReactNode;
 }) {
-  const track = () => trackConversion(EVENTS.GITHUB_OUTBOUND_CLICK, { repoSlug, variant }, { beacon: true });
+  const track = () => trackConversion(EVENTS.GITHUB_OUTBOUND_CLICK, { repoSlug, variant }, { beacon: true, source: 'github_cta' });
   return (
     <a
       href={href}

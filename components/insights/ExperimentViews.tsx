@@ -1,4 +1,7 @@
 import { formatRate, type ArmStats, type GuardrailStatus } from '@/lib/advice/verdict';
+import type { HeroLayout } from '@/lib/flagsmith/variants';
+import { CONVERSION_SOURCES, type ConversionSource } from '@/lib/telemetry/events';
+import { sourceRate, type SourceCounts } from '@/lib/telemetry/sources';
 
 const CHIP: Record<GuardrailStatus, { label: string; dot: string }> = {
   baseline: { label: 'Baseline', dot: 'bg-zinc-500' },
@@ -110,16 +113,66 @@ export function RateBars({ title, rows }: { title: string; rows: BarRow[] }) {
 }
 
 /** Bars for one rate across arms: the leader on intent, or a breaching arm on bounce, gets the accent. */
-export function intentBars(arms: ArmStats[]): BarRow[] {
-  const best = Math.max(...arms.map((a) => a.intentRate ?? -1));
-  const unique = arms.filter((a) => a.intentRate === best).length === 1;
+/** Accents only the verdict's leader (named with Flagsmith's win probability), never the raw top rate. */
+export function intentBars(arms: ArmStats[], leader: HeroLayout | null): BarRow[] {
   return arms.map((a) => ({
     label: a.variant,
     value: a.intentRate,
-    accent: unique && a.intentRate === best && best > 0 ? 'lead' : undefined,
+    accent: leader !== null && a.variant === leader ? 'lead' : undefined,
   }));
 }
 
 export function bounceBars(arms: ArmStats[]): BarRow[] {
   return arms.map((a) => ({ label: a.variant, value: a.bounceRate, accent: a.guardrail === 'breach' ? 'alert' : undefined }));
+}
+
+const SOURCE_LABEL: Record<ConversionSource, string> = {
+  clone_box: 'Clone box copy',
+  quickstart_copy: 'Quickstart copy',
+  github_cta: 'GitHub button',
+};
+
+/**
+ * Confound check: unique visitors per conversion source, per arm, over views counted since source
+ * tracking shipped. The clone box and GitHub button exist in both arms; the quickstart copy button
+ * only in quickstart_first.
+ */
+export function SourceTable({ rows }: { rows: { variant: HeroLayout; counts: SourceCounts }[] }) {
+  return (
+    <div className="overflow-x-auto rounded-xl border border-zinc-800">
+      <table className="w-full min-w-[36rem] text-left text-sm">
+        <caption className="sr-only">Conversions per source and variant, since source tracking started</caption>
+        <thead className="border-b border-zinc-800 bg-zinc-900/60 text-xs text-zinc-400">
+          <tr>
+            <th scope="col" className="px-4 py-3 font-normal">Variant</th>
+            <th scope="col" className="px-4 py-3 text-right font-normal">Visitors (n)</th>
+            {CONVERSION_SOURCES.map((s) => (
+              <th key={s} scope="col" className="px-4 py-3 text-right font-normal">
+                {SOURCE_LABEL[s]}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-zinc-800/80 font-mono text-zinc-200 tabular-nums">
+          {rows.map(({ variant, counts }) => (
+            <tr key={variant}>
+              <th scope="row" className="px-4 py-3 font-normal text-zinc-100">{variant}</th>
+              <td className="px-4 py-3 text-right">{counts.views}</td>
+              {CONVERSION_SOURCES.map((s) => (
+                <td key={s} className="px-4 py-3 text-right">
+                  {s === 'quickstart_copy' && variant !== 'quickstart_first' ? (
+                    <span className="text-zinc-600">n/a</span>
+                  ) : (
+                    <>
+                      {counts.bySource[s]} <span className="text-zinc-500">({formatRate(sourceRate(counts, s))})</span>
+                    </>
+                  )}
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
 }

@@ -1,6 +1,9 @@
 import { LOW_SAMPLE_PER_ARM, type Verdict } from '@/lib/advice/verdict';
 
-/** FR-8.3 winner sentence, guardrail warnings and low-sample warning. */
+/**
+ * FR-8.3 headline, guardrail warnings and sample note. Below LOW_SAMPLE_PER_ARM the headline itself
+ * says it's too early, and no leader is named anywhere.
+ */
 export function VerdictPanel({ verdict, resultsUrl }: { verdict: Verdict; resultsUrl: string }) {
   return (
     <div className="space-y-3">
@@ -14,8 +17,8 @@ export function VerdictPanel({ verdict, resultsUrl }: { verdict: Verdict; result
       {verdict.lowSample ? (
         <p className="flex gap-2 text-sm text-amber-200/90">
           <span aria-hidden="true" className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-amber-400" />
-          Low sample: at least one arm has fewer than {LOW_SAMPLE_PER_ARM} visitors, so this can flip with a few more
-          visits
+          No leader until every arm has at least {LOW_SAMPLE_PER_ARM} visitors. The raw numbers below can flip with a
+          few more visits
         </p>
       ) : null}
       <p className="text-xs text-zinc-500">

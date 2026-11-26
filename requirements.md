@@ -1,6 +1,6 @@
 # ReadmeHook — Requirements
 
-IDs are referenced from `prompt.md`, `CLAUDE.md` and commit messages. **P1** = Phase 1 (must), **P2** = Phase 2 (should).
+IDs are referenced from commit messages. **P1** = Phase 1 (must), **P2** = Phase 2 (should).
 
 ## 1. Functional requirements
 

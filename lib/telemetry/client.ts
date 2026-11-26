@@ -4,7 +4,7 @@
  * travels in the httpOnly `rh_vid` cookie, never in the body (CLAUDE.md rule 4).
  */
 import type { HeroLayout } from '@/lib/flagsmith/variants';
-import { EVENTS, TRACK_ENDPOINT, type EventName } from './events';
+import { EVENTS, TRACK_ENDPOINT, type ConversionSource, type EventName } from './events';
 
 export interface TrackContext {
   repoSlug: string;
@@ -12,9 +12,18 @@ export interface TrackContext {
 }
 
 /** Use `beacon` when the page may be leaving (outbound click, pagehide). */
-export function trackExperimentEvent(name: EventName, ctx: TrackContext, opts: { beacon?: boolean } = {}): void {
+export function trackExperimentEvent(
+  name: EventName,
+  ctx: TrackContext,
+  opts: { beacon?: boolean; source?: ConversionSource } = {},
+): void {
   if (typeof window === 'undefined') return;
-  const body = JSON.stringify({ event: name, repoSlug: ctx.repoSlug, variant: ctx.variant });
+  const body = JSON.stringify({
+    event: name,
+    repoSlug: ctx.repoSlug,
+    variant: ctx.variant,
+    ...(opts.source ? { source: opts.source } : {}),
+  });
 
   if (opts.beacon && typeof navigator.sendBeacon === 'function') {
     try {
@@ -63,9 +72,17 @@ function claimDeveloperIntent(repoSlug: string): boolean {
   return true;
 }
 
-/** Sends a conversion event, then `developer_intent` if it's this visitor's first for the repo. */
-export function trackConversion(name: EventName, ctx: TrackContext, opts: { beacon?: boolean } = {}): void {
+/**
+ * Sends a conversion event, then `developer_intent` if it's this visitor's first for the repo.
+ * `source` names the control that fired it; it goes with the conversion event only and is used for
+ * the Redis confound check, never forwarded to Flagsmith.
+ */
+export function trackConversion(
+  name: EventName,
+  ctx: TrackContext,
+  opts: { beacon?: boolean; source: ConversionSource },
+): void {
   convertedThisPage.add(ctx.repoSlug.toLowerCase());
   trackExperimentEvent(name, ctx, opts);
-  if (claimDeveloperIntent(ctx.repoSlug)) trackExperimentEvent(EVENTS.DEVELOPER_INTENT, ctx, opts);
+  if (claimDeveloperIntent(ctx.repoSlug)) trackExperimentEvent(EVENTS.DEVELOPER_INTENT, ctx, { beacon: opts.beacon });
 }

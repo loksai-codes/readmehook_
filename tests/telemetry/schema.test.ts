@@ -36,6 +36,21 @@ describe('parseTrackBody', () => {
     expect(parseTrackBody(JSON.stringify({ ...ok, visitorId: '3b241101-e2bb-4255-8caf-4136c566a962' }))).toBeNull();
   });
 
+  it('accepts a source that matches its event (Redis confound check)', () => {
+    expect(parseTrackBody(JSON.stringify({ ...ok, source: 'clone_box' }))).toEqual({ ...ok, source: 'clone_box' });
+    expect(parseTrackBody(JSON.stringify({ ...ok, source: 'quickstart_copy' }))).not.toBeNull();
+    expect(
+      parseTrackBody(JSON.stringify({ ...ok, event: 'github_outbound_click', source: 'github_cta' })),
+    ).not.toBeNull();
+  });
+
+  it('rejects unknown sources and sources on the wrong event', () => {
+    expect(parseTrackBody(JSON.stringify({ ...ok, source: 'hero' }))).toBeNull();
+    expect(parseTrackBody(JSON.stringify({ ...ok, source: 'github_cta' }))).toBeNull();
+    expect(parseTrackBody(JSON.stringify({ ...ok, event: 'developer_intent', source: 'clone_box' }))).toBeNull();
+    expect(parseTrackBody(JSON.stringify({ ...ok, event: 'card_view', source: 'clone_box' }))).toBeNull();
+  });
+
   it('rejects oversized bodies before parsing', () => {
     expect(parseTrackBody(JSON.stringify({ ...ok, pad: 'x'.repeat(MAX_TRACK_BODY_BYTES) }))).toBeNull();
   });

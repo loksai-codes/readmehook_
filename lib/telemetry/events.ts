@@ -22,6 +22,29 @@ export const COUNTER_FIELD: Record<EventName, string> = {
   bounce_under_5s: 'bounces',
 };
 
+/**
+ * Which control fired a conversion, for the confound check (the treatment hero has an extra copy
+ * button). Redis-only: never sent to Flagsmith, so the experiment's events are unchanged.
+ */
+export const CONVERSION_SOURCES = ['clone_box', 'quickstart_copy', 'github_cta'] as const;
+export type ConversionSource = (typeof CONVERSION_SOURCES)[number];
+
+/** The only event each source may accompany. */
+export const SOURCE_EVENT: Record<ConversionSource, EventName> = {
+  clone_box: 'clone_command_copied',
+  quickstart_copy: 'clone_command_copied',
+  github_cta: 'github_outbound_click',
+};
+
+/**
+ * Redis hash fields for the per-source counters. `src_views` counts card views from the moment
+ * source tracking shipped, so source rates share a denominator that started at the same time.
+ */
+export const SOURCE_VIEWS_FIELD = 'src_views';
+export function sourceField(source: ConversionSource): string {
+  return `src_${source}`;
+}
+
 export function isEventName(value: unknown): value is EventName {
   return typeof value === 'string' && (ALLOWED_EVENTS as readonly string[]).includes(value);
 }

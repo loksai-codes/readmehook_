@@ -1,6 +1,6 @@
 # ReadmeHook v2 spec (text extracted from readmehook-v2.pdf)
 
-> Full vision. Build order and Phase 1 scope come from PRD.md.
+> Full vision. Phase 1 scope: the requirements marked **P1** in `requirements.md`.
 
 ```text
 ReadmeHook — What Makes a Developer

@@ -164,7 +164,7 @@ function CloneBlock({ command, repoSlug, variant }: { command: string; repoSlug:
         </div>
       ))}
       <div className="absolute top-2.5 right-2.5">
-        <CopyCommandButton text={command} label="Copy" repoSlug={repoSlug} variant={variant} />
+        <CopyCommandButton text={command} label="Copy" repoSlug={repoSlug} variant={variant} source="clone_box" />
       </div>
     </div>
   );

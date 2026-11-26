@@ -29,6 +29,7 @@ export function QuickstartFirstHero({
           label="Copy command"
           repoSlug={meta.fullName}
           variant="quickstart_first"
+          source="quickstart_copy"
         />
       }
       caption={
