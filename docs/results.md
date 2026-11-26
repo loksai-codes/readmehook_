@@ -3,7 +3,7 @@
 > **Draft.** Every `__` is blank on purpose and gets filled only from the Production Flagsmith results page (and, for the confound check, the Production `/insights` counters). Simulated or Development traffic never goes here. No number on this page is estimated.
 
 Experiment: **Hero layout: quickstart vs architecture** · Flagsmith experiment 485 · Production
-Ran: __ UTC → __ UTC · Results refreshed at: __ UTC
+Ran: 2026-11-25 17:25 UTC (started in Flagsmith) → __ UTC · Results refreshed at: __ UTC
 
 ## 1. Hypothesis
 
