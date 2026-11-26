@@ -1,6 +1,6 @@
 # Flagsmith setup — flag, metrics, experiment
 
-Two routes. **Route A** (fastest): let Claude Code run Flagsmith's official coding-agent setup prompt (Prompt 3 in `prompt.md` points at it). **Route B**: click through the dashboard yourself using the values below. Either way, the values must match exactly.
+Two routes. **Route A** (fastest): let a coding agent run Flagsmith's official coding-agent setup prompt (linked below). **Route B**: click through the dashboard yourself using the values below. Either way, the values must match exactly.
 
 Reference: https://docs.flagsmith.com/experimentation/set-up-with-a-coding-agent
 
