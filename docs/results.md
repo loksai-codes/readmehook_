@@ -1,55 +1,72 @@
 # Results: hero layout, quickstart vs architecture
 
-> **Draft.** The setup below is filled in. Every number marked `__` is still blank and waits for the real Production figures from the Flagsmith results page. Simulated or Development traffic is never used here.
+> **Draft.** Every `__` is blank on purpose and gets filled only from the Production Flagsmith results page (and, for the confound check, the Production `/insights` counters). Simulated or Development traffic never goes here. No number on this page is estimated.
 
-```
-Experiment: Hero layout: quickstart vs architecture (Flagsmith experiment 485, Production)
-Ran: 2026-11-25 17:25 UTC → __ (Production)
-Visitors: control (architecture_first) n=__, quickstart_first n=__
-Developer Intent Rate: control __% vs quickstart_first __% (Flagsmith: __)
-Guardrail bounce_under_5s: control __% vs quickstart_first __%
-Segment insight (optional): by repo_language / referrer_source …
-Decision: __
-What surprised us: __
-What we'd test next: demo_gif_first for visual_heavy_repos
-```
+Experiment: **Hero layout: quickstart vs architecture** · Flagsmith experiment 485 · Production
+Ran: __ UTC → __ UTC · Results refreshed at: __ UTC
 
-## Setup
+## 1. Hypothesis
+
+Written before any data, with the sample-size estimate and the decision rule: [`docs/experiment-plan.md`](experiment-plan.md).
+
+> If a visitor sees a copyable quickstart command above the fold (`quickstart_first`) instead of an architecture diagram (`architecture_first`), they are more likely to show developer intent (copy the clone command or click through to GitHub). We expect a higher Developer Intent Rate with no increase in sub-5-second bounces.
+
+What would prove it wrong: `quickstart_first` is not ahead on `developer_intent` per Flagsmith's win probability, **or** it is ahead only through its extra copy button (see §5), **or** the bounce guardrail gets worse.
 
 | | |
 |---|---|
 | Flag | `repo_hero_layout` (multivariate) |
-| Arms | control `architecture_first` 50% · `quickstart_first` 50% · `demo_gif_first` 0% (Phase 1 is two arms) |
+| Arms | control `architecture_first` 50% · `quickstart_first` 50% · `demo_gif_first` 0% |
 | Unit | anonymous visitor (`rh_vid` cookie), sticky across repos and refreshes |
-| Exposure | recorded server-side when the experiment flag is evaluated for a human page view; bots, link unfurlers, prefetches and the creator's own first view are never identified |
-| Primary metric | Developer intent (`developer_intent`, occurrence, expected to increase) |
-| Secondary | Clone command copied, GitHub outbound click |
-| Guardrail | Fast bounce (`bounce_under_5s`, should not increase) |
-| Population | real visitors to `/r/*` on the Production deploy |
-| Hypothesis | see `docs/experiment-plan.md` |
+| Primary metric | `developer_intent` (expected to increase) |
+| Secondary | `clone_command_copied`, `github_outbound_click` |
+| Guardrail | `bounce_under_5s` (should not increase) |
 
-## Numbers (from the Flagsmith results page)
+## 2. Sample size (n per arm)
 
 | | architecture_first (control) | quickstart_first |
 |---|---|---|
-| Visitors exposed (n) | __ | __ |
+| Visitors exposed (Flagsmith) | __ | __ |
+
+The plan needs about 140–250 visitors per arm to detect a +10–15 point lift from a 10–20% baseline, and about 700 per arm for +5 points. With n = __ per arm, this test can only detect a lift of roughly __ points or more.
+
+Traffic source: __ (e.g. the Toggle Wars Discord, with `?ref=discord`). A developer audience, but a narrow one.
+
+## 3. Flagsmith results (source of truth)
+
+| | architecture_first (control) | quickstart_first |
+|---|---|---|
 | Developer intent | __ (__%) | __ (__%) |
 | Clone command copied | __ (__%) | __ (__%) |
 | GitHub outbound click | __ (__%) | __ (__%) |
 | Bounce under 5 s (guardrail) | __ (__%) | __ (__%) |
 
-What Flagsmith shows for the primary metric, quoted as shown (e.g. its probability or significance indicator, and the interval if one is given): __
+**Win probability for the primary metric (quoted from Flagsmith):** __
+**Credible interval / lift vs control (as shown):** __
 
-Results refreshed at: __ UTC. Screenshot: `docs/screenshots/flagsmith-results.png`
+<!-- Screenshot: docs/screenshots/flagsmith-results.png (Flagsmith experiment 485 results page) -->
+_Screenshot placeholder: `docs/screenshots/flagsmith-results.png`, not captured yet._
 
-## How to read this honestly
+## 4. Clone-box-only check
 
-- **Sample size.** `docs/experiment-plan.md` estimates about 140–250 visitors per arm to detect a jump from a 10–20% baseline to +10–15 points with 80% power, and about 700 per arm for a +5 point lift. With n = __ per arm, this test can only detect an effect of roughly __ points or more.
-- **Significance.** This write-up claims only what the Flagsmith results page shows. If Flagsmith shows no clear winner, the result is reported as inconclusive, not as "quickstart_first looks better".
-- **Live counters.** The `/insights` page shows Redis live counters (unique visitors per metric). They are useful for watching the test run, but they are not the analysis, and they can differ slightly from Flagsmith (Flagsmith only counts conversions after an identity's first exposure).
-- **Who the visitors were.** Traffic came mostly from __ (e.g. the Toggle Wars Discord). That is a developer audience, but a narrow one, so the result may not carry over to visitors arriving from search.
+The clone box and the GitHub button are identical in both arms. Comparing them per arm separates the layout effect from the extra button. Source: Production `/insights` → "Confound check" (Redis live counters, unique visitors, counted from __ UTC when source tracking shipped, so n here is smaller than §2).
 
-## Decision (per the rule in docs/experiment-plan.md)
+| | architecture_first (control) | quickstart_first |
+|---|---|---|
+| Visitors since source tracking (n) | __ | __ |
+| Clone box copy | __ (__%) | __ (__%) |
+| Quickstart copy (treatment only) | n/a | __ (__%) |
+| GitHub button | __ (__%) | __ (__%) |
+
+These are live counters, not a significance test. Read: __
+
+## 5. Disclosed confound
+
+- **The treatment has an extra copy button.** `quickstart_first` puts a copyable quickstart command in the hero. The control's hero (a diagram) has no copy button. Both arms share the same clone box and GitHub button. So the treatment has more ways to fire `clone_command_copied`, and with it `developer_intent`.
+- **A quickstart copy counts as a clone copy.** Copying the quickstart command (for example `pnpm install`) fires `clone_command_copied` in Flagsmith, even though it is not the clone command.
+- **What we did:** the running experiment and its metrics were not changed. Since __ UTC, each copy/click also records which button it came from in Redis only (§4). If `quickstart_first` wins in Flagsmith but not on clone-box and GitHub-button rates, the win is attributed to the extra button, not the layout.
+
+## 6. Decision (per the rule in [`experiment-plan.md`](experiment-plan.md#decision-rule))
 
 | Outcome | Decision |
 |---|---|
@@ -58,10 +75,18 @@ Results refreshed at: __ UTC. Screenshot: `docs/screenshots/flagsmith-results.pn
 | No clear difference | Report the null result + n + what we'd need to detect a smaller effect |
 
 Our outcome: __
+Why (win probability, guardrail, confound check): __
 
-## Segment insight (optional)
+## 7. Rollout via the same flag
 
-By `repo_language` or `referrer_source`, only if each segment has enough visitors to say anything (otherwise state that the segments were too small): __
+The winner ships through `repo_hero_layout`; no code change and no new flag.
+
+| | |
+|---|---|
+| Experiment ended | __ UTC |
+| Change made in Flagsmith | __ (e.g. control value of `repo_hero_layout` set to `__`, or kept at `architecture_first`) |
+| Environment | Production |
+| Verified on the live card | __ |
 
 ## What surprised us
 
