@@ -33,7 +33,7 @@ Built for **Toggle Wars, the Flagsmith Experimentation Hackathon** (WeMakeDevs) 
 > **Live:** [readmehook.vercel.app](https://readmehook.vercel.app) · **Try it:** [vercel/next.js card](https://readmehook.vercel.app/r/vercel/next.js) · **Dashboard:** [/insights](https://readmehook.vercel.app/insights) · **Source of truth:** the Flagsmith results page linked from the dashboard
 
 <!-- Update daily: date, status from Flagsmith, n per arm from Flagsmith, one plain sentence. No leader below 30 per arm. -->
-**Experiment status** (updated 2026-11-26): running in Flagsmith since 2026-11-25 17:25 UTC · n = 0 vs 0 (Flagsmith, as of 03:27 UTC) · Production has received no events yet; investigating the event pipeline
+**Experiment status** (updated 2026-11-26): running in Flagsmith since 2026-11-25 17:25 UTC, collecting data since 2026-11-26 04:29 UTC (an invalid Production key blocked every exposure before that) · n = 0 vs 2 (Flagsmith, as of 04:42 UTC; both are our own verification visits) · too early to call
 
 ---
 

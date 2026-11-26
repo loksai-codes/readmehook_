@@ -3,7 +3,9 @@
 > **Draft.** Every `__` is blank on purpose and gets filled only from the Production Flagsmith results page (and, for the confound check, the Production `/insights` counters). Simulated or Development traffic never goes here. No number on this page is estimated.
 
 Experiment: **Hero layout: quickstart vs architecture** · Flagsmith experiment 485 · Production
-Ran: 2026-11-25 17:25 UTC (started in Flagsmith) → __ UTC · Results refreshed at: __ UTC
+Ran: 2026-11-25 17:25 UTC (started in Flagsmith) → __ UTC · **Data from: 2026-11-26 04:29 UTC** · Results refreshed at: __ UTC
+
+> **Data window.** Until 2026-11-26 04:29 UTC the Production `FLAGSMITH_SERVER_KEY` on Vercel was invalid. Every visitor was served control through the fallback path and Flagsmith recorded no exposures and no events (Production identities: 0, API requests: 0, warehouse events: 0). The key was re-entered, and since the 04:33 UTC deploy every visit's variant source is logged and recorded in Redis (`assign_flagsmith` / `assign_fallback`). The first two exposures (04:29 and 04:34 UTC) were our own verification visits. Redis visits from before the fix are not used anywhere on this page.
 
 ## 1. Hypothesis
 
@@ -49,7 +51,7 @@ _Screenshot placeholder: `docs/screenshots/flagsmith-results.png`, not captured 
 
 ## 4. Clone-box-only check
 
-The clone box and the GitHub button are identical in both arms. Comparing them per arm separates the layout effect from the extra button. Source: Production `/insights` → "Confound check" (Redis live counters, unique visitors, counted from __ UTC when source tracking shipped, so n here is smaller than §2).
+The clone box and the GitHub button are identical in both arms. Comparing them per arm separates the layout effect from the extra button. Source: Production `/insights` → "Confound check" (Redis live counters, unique visitors, counted from 2026-11-26 04:33 UTC when source tracking shipped, so n here is smaller than §2).
 
 | | architecture_first (control) | quickstart_first |
 |---|---|---|
